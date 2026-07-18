@@ -116,6 +116,29 @@ AI-Travel-Skill-Core/
 
 ### 定制版（Commercial Edition）
 
+定制化旅行路线以及可视化交互地图
+
+https://github.com/user-attachments/assets/292ace86-6e5c-4889-a7b8-3cb161de3638
+
+预算清单以及当地城市避坑指南、常见骗局、必备APP
+
+https://github.com/user-attachments/assets/18a7430b-4a94-4f97-a0fd-4f30f02d99ee
+
+主页（旅游路线及可交互式地图）
+
+<img width="1917" height="942" alt="image" src="https://github.com/user-attachments/assets/5ac641bf-a2de-46b0-8c76-67daafda78e6" />
+
+城市旅游攻略
+
+<img width="1896" height="930" alt="image" src="https://github.com/user-attachments/assets/c15db90d-0f99-40a2-8ea0-049a925e4d86" />
+
+预算
+
+<img width="1919" height="935" alt="image" src="https://github.com/user-attachments/assets/87d68d26-9ed9-458d-80f2-49b38b0932b2" />
+
+旅行清单
+<img width="1913" height="936" alt="image" src="https://github.com/user-attachments/assets/9ae13543-5ba3-416f-87bb-09c57de1eaeb" />
+
 定制版的核心是**一人一规划** —— 根据你的需求生成专属方案，不是套模板。
 
 | 功能 | 开源版 | 定制版 |
@@ -196,10 +219,6 @@ AI-Travel-Skill-Core/
 ---
 
 *最后更新：2026-07-19*
-
----
-
----
 
 ---
 
