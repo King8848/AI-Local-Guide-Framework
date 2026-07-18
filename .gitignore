@@ -1,0 +1,71 @@
+# =====================
+# 系统文件
+# =====================
+.DS_Store
+Thumbs.db
+
+# =====================
+# 环境变量 / 密钥（保留 .env.example）
+# =====================
+.env
+.env.local
+.env.production
+*.key
+*.pem
+config/private/
+secrets/
+
+# =====================
+# API Keys
+# =====================
+*api_key*
+*apikey*
+*secret*
+
+# =====================
+# Python
+# =====================
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# =====================
+# Node
+# =====================
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# =====================
+# 本地缓存
+# =====================
+.cache/
+tmp/
+temp/
+logs/
+
+# =====================
+# 私有 / 商业内容
+# =====================
+private/
+knowledge/private/
+obsidian/
+commercial/
+premium/
+private_templates/
+
+# =====================
+# 生成产物
+# =====================
+examples/output/
+examples/*.html
+examples/*.pdf
+
+# =====================
+# 临时文件
+# =====================
+~$*
+*.tmp
+*.bak
