@@ -269,9 +269,45 @@ AI-Travel-Skill-Core/
 
 ## Core vs Commercial
 
-This project provides the **open foundation** for building travel agents.
+This project provides the **open-source foundation** for building AI travel agents, helping developers quickly build their own travel assistants or tourism agents.
 
-The knowledge base includes **basic city packs** for demonstration. For full-depth city guides, proprietary datasets, and production-ready integrations — a custom version is available.
+The open-source edition includes:
+- ✅ AI Travel Skill basic framework
+- ✅ Extensible Workflow & Provider interfaces
+- ✅ Demo templates & sample cities
+- ✅ Freely extensible trip planning pipeline
+
+For a more complete, personalized travel experience, check out the **Commercial Edition**.
+
+### Custom Edition (Commercial)
+
+The custom edition focuses on **one person, one plan** — generating a tailored travel solution based on your needs, rather than applying a fixed template.
+
+Compared to the open-source edition, the custom edition offers:
+
+| Feature | Open Source | Custom |
+|---------|:------:|:------:|
+| Basic AI trip planning | ✅ | ✅ |
+| Demo city examples | ✅ | ❌ (generated on demand) |
+| Personalized travel planning | ❌ | ✅ |
+| Local insider recommendations | ❌ | ✅ |
+| Hidden gems & specialty food | ❌ | ✅ |
+| Personalized route optimization | ❌ | ✅ |
+| Budget optimization | ❌ | ✅ |
+| Advanced interactive travel page | Basic | ✅ |
+| Continuously updated city knowledge | ❌ | ✅ |
+
+The custom edition is ideal for:
+- Couple travel
+- Family trips with kids
+- Self-driving road trips
+- Deep travel experiences
+- First-time visitors to unfamiliar cities
+- Travelers seeking local culture & authentic experiences
+
+📩 For custom travel planning or business collaboration, feel free to reach out.
+
+**WeChat：Hoyeye-Z**
 
 ---
 
@@ -285,6 +321,8 @@ The knowledge base includes **basic city packs** for demonstration. For full-dep
 | 🌐 Knowledge Base | Community-driven city packs |
 | 🔌 Provider Interface | Pluggable weather/map/search |
 | 📦 Zero Dependencies | Works with any AI agent platform |
+
+You can fully customize your own AI travel planner with local data — zero data leakage, no big data surveillance.
 
 ---
 
