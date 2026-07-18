@@ -94,12 +94,12 @@ This project provides the **open foundation** for building travel agents.
 | Demo template | ✅ | ✅ |
 | Knowledge base structure | ✅ | ✅ |
 | City packs (community) | ✅ | ✅ |
-| Advanced templates (dark glass, Apple-style) | ❌ | ✅ |
-| Private knowledge base (37+ cities) | ❌ | ✅ |
+| Advanced templates | ❌ | ✅ |
+| Private knowledge base  | ❌ | ✅ |
 | Dianping/XHS scraping integration | ❌ | ✅ |
 | FlyAI full integration | ❌ | ✅ |
 | Real-time price / inventory | ❌ | ✅ |
-| Production pipeline (batch generation) | ❌ | ✅ |
+| Production pipeline| ❌ | ✅ |
 | Advanced prompts / commercial workflows | ❌ | ✅ |
 
 **Advanced templates, proprietary datasets, private workflows, and commercial integrations are maintained separately.**
@@ -144,13 +144,6 @@ We welcome:
 - 📖 Documentation
 
 See [CONTRIBUTING.md](CONTRIBUTING.md)
-
----
-
-## Contact
-
-- GitHub Issues
-- WeChat: Hoyeye-Z
 
 ---
 
