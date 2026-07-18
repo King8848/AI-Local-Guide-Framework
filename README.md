@@ -2,9 +2,27 @@
 
 > **中文** | [English](#english)
 
-构建智能旅行助手的开源框架。
+你肯定受够了那些千篇一律的旅行攻略。
 
-设计、定制和扩展 AI 驱动的本地导游，采用模块化技能、工作流和 Provider 架构。
+"去成都吃火锅，去杭州游西湖" —— 随便一个 AI 都能告诉你这些。但如果你带着爸妈去，不想排队，想找本地人真正去的地方，还要控制预算呢？现有的旅行 AI 就卡住了。它们只会套模板，不会真的替你想。
+
+这个框架就是为了解决这个问题：**让你 5 分钟搭一个真正懂你的本地 AI 旅行助手**。
+
+它跑在本地，不泄露隐私。改个 JSON 就能出完整攻略页。够简单，够灵活，而且完全属于你。
+
+---
+
+## 先看效果
+
+用这份框架生成的攻略页：
+
+- 📅 按天组织的行程，不是流水账
+- 🗺️ 交互式地图，POI 一点就开
+- 💰 预算试算器，输入人数自动算
+- 🍜 按维度整理的美食推荐（不只是"必吃榜"）
+- 💡 避坑指南，告诉你哪些是游客陷阱
+
+> 👉 Demo 城市：[杭州](knowledge/china/cities/杭州.md) · [成都](knowledge/china/cities/成都.md) · [东京](knowledge/international/tokyo.md)
 
 ---
 
@@ -12,17 +30,18 @@
 
 ### 作为 AI Agent 使用
 
-将本目录放入 Agent 的 `skills/` 文件夹，Agent 会自动读取 `SKILL.md`。
+把本目录放进 Agent 的 `skills/` 文件夹，Agent 会自动读取 `SKILL.md`。
 
 ### 作为开发者
 
 ```bash
 git clone https://github.com/King8848/AI-Local-Guide-Frameworl.git
-
-# 1. 准备 TripData JSON（参见 schema/trip-data.json）
-# 2. 注入 templates/demo.html
-# 3. 生成完整旅行攻略页面
 ```
+
+然后：
+1. 准备一份 TripData JSON（参见 [schema/trip-data.json](schema/trip-data.json)）
+2. 注入 [templates/demo.html](templates/demo.html)
+3. 打开浏览器，看到你的专属攻略页
 
 ### 作为贡献者
 
@@ -36,35 +55,34 @@ git clone https://github.com/King8848/AI-Local-Guide-Frameworl.git
 
 ```
 AI-Travel-Skill-Core/
-├── LICENSE.md              # Apache License 2.0
-├── LICENSE                 # Apache License 2.0（完整文本）
-├── NOTICE                  # 第三方组件声明
-├── README.md               # 本文件（中英双语）
-├── .env.example            # 环境变量模板
+├── LICENSE                   # Apache License 2.0
+├── NOTICE                    # 第三方组件声明
+├── README.md                 # 本文件（中英双语）
+├── .env.example              # 环境变量模板
 ├── .gitignore
-├── SKILL.md                # Agent 入口文件
+├── SKILL.md                  # Agent 入口文件
 ├── docs/
-│   ├── architecture.md     # 系统架构设计
-│   └── template-engine.md  # 模板引擎使用指南
+│   ├── architecture.md       # 系统架构设计
+│   └── template-engine.md    # 模板引擎使用指南
 ├── references/
-│   ├── workflow.md         # 用户交互工作流
-│   ├── planner.md          # 行程规划引擎
-│   ├── budget.md           # 预算引擎
-│   ├── formatter.md        # 输出格式化
-│   └── router.md           # 意图路由
-├── providers/              # 可插拔的 Provider 接口
-│   ├── README.md           # Provider 接口文档
-│   ├── flyai-provider.md   # FlyAI 搜索适配器
+│   ├── workflow.md           # 用户交互工作流
+│   ├── planner.md            # 行程规划引擎
+│   ├── budget.md             # 预算引擎
+│   ├── formatter.md          # 输出格式化
+│   └── router.md             # 意图路由
+├── providers/                # 可插拔的 Provider 接口
+│   ├── README.md             # Provider 接口文档
+│   ├── flyai-provider.md     # FlyAI 搜索适配器
 │   └── openfreemap-provider.md # 免费地图瓦片
 ├── schema/
-│   └── trip-data.json      # TripData JSON Schema
+│   └── trip-data.json        # TripData JSON Schema
 ├── templates/
-│   └── demo.html           # 简单 Demo 模板
+│   └── demo.html             # 简单 Demo 模板
 ├── examples/
-│   └── sample-output.md    # 示例输出
+│   └── sample-output.md      # 示例输出
 └── knowledge/
-    ├── README.md           # 知识库文档
-    ├── china/              # 中国城市包
+    ├── README.md             # 知识库文档
+    ├── china/                # 中国城市包
     │   ├── cities/
     │   │   ├── _template.md
     │   │   ├── 杭州.md
@@ -73,7 +91,7 @@ AI-Travel-Skill-Core/
     │   ├── culture/
     │   ├── travel/
     │   └── avoid/
-    ├── international/      # 国际城市包
+    ├── international/        # 国际城市包
     │   ├── _template.md
     │   └── tokyo.md
     └── common/
@@ -86,7 +104,7 @@ AI-Travel-Skill-Core/
 
 ## 开源版 vs 定制版
 
-本项目提供 AI Travel Agent 的**开源基础框架**，帮助开发者快速构建自己的旅行助手或旅游 Agent。
+这份框架是**开源基础**，帮你快速搭自己的旅行 Agent。
 
 开源版包含：
 - ✅ AI Travel Skill 基础框架
@@ -94,17 +112,15 @@ AI-Travel-Skill-Core/
 - ✅ 示例模板与 Demo 城市
 - ✅ 可自由扩展的旅行规划流程
 
-如果你希望获得更完整、更真实的旅行体验，可以体验 **定制版**。
+如果你想要更完整、更私人的旅行体验，可以试试**定制版**。
 
 ### 定制版（Commercial Edition）
 
-定制版专注于 **一人一规划**，根据你的需求生成专属旅行方案，而不是套用固定攻略。
-
-相比开源版，定制版提供：
+定制版的核心是**一人一规划** —— 根据你的需求生成专属方案，不是套模板。
 
 | 功能 | 开源版 | 定制版 |
 |------|:------:|:------:|
-| AI 基础旅行规划 | ✅ | ✅ |
+| 基础 AI 旅行规划 | ✅ | ✅ |
 | Demo 城市示例 | ✅ | ❌（按需求生成） |
 | 专属旅行规划 | ❌ | ✅ |
 | 本地人玩法推荐 | ❌ | ✅ |
@@ -139,7 +155,7 @@ AI-Travel-Skill-Core/
 | 🔌 Provider 接口 | 可插拔的天气/地图/搜索 |
 | 📦 零依赖 | 适配任何 AI Agent 平台 |
 
-您完全可以使用该框架自定义专属更懂您的本地AI规划师，全程数据在本地没有数据外泄，不用担心被大数据监控
+你可以完全在本地运行这个框架 —— 数据不出本机，没有大数据监控，不用担心隐私泄露。
 
 ---
 
@@ -153,6 +169,8 @@ AI-Travel-Skill-Core/
 - [ ] 2-3 个 Provider 实现
 - [ ] 插件接口稳定
 - [ ] 多语言支持
+
+接下来最让我兴奋的是**社区城市包** —— 当足够多的人贡献自己城市的知识库，这个框架才能真正"懂旅行"。如果你来自某个城市，欢迎贡献一份城市包，哪怕只是几家你私藏的店。
 
 ---
 
@@ -171,7 +189,7 @@ AI-Travel-Skill-Core/
 
 ## 许可
 
-[Apache License 2.0](LICENSE.md)
+[Apache License 2.0](LICENSE)
 
 第三方组件声明：[NOTICE](NOTICE)
 
@@ -181,33 +199,56 @@ AI-Travel-Skill-Core/
 
 ---
 
+---
+
+---
+
 # English
 
 > [中文](#ai-travel-agent-framework) | **English**
 
-An open-source framework for building intelligent travel agents.
+You've seen the same travel advice a thousand times.
 
-Design, customize, and extend AI-powered local guides with modular skills, workflows, and providers.
+"Go to Chengdu for hot pot. Go to杭州 for West Lake." Any AI can tell you that. But what if you're traveling with your parents, don't want to wait in line, need places locals actually go, and have a budget to stick to? That's where most travel AI stops working. It can only follow templates. It doesn't actually think for you.
+
+This framework exists to fix that: **build a local AI travel assistant that actually gets you, in about 5 minutes.**
+
+It runs locally. Your data stays on your machine. Change a JSON file, get a full travel guide page. Simple enough to start, flexible enough to make yours.
 
 ---
 
-## Quick Start
+## See what it looks like
+
+A travel guide built with this framework:
+
+- 📅 Day-by-day itinerary, not a timeline dump
+- 🗺️ Interactive map, tap a POI to see details
+- 💰 Budget calculator, enter your group size and it computes automatically
+- 🍜 Food recommendations organized by dimension (not just "must-eat lists")
+- 💡 Trap avoidance tips — what to skip and why
+
+> 👉 Demo cities: [Hangzhou](knowledge/china/cities/杭州.md) · [Chengdu](knowledge/china/cities/成都.md) · [Tokyo](knowledge/international/tokyo.md)
+
+---
+
+## Quick start
 
 ### As an AI Agent
 
 Drop this directory into your agent's `skills/` folder. The agent reads `SKILL.md` automatically.
 
-### As a Developer
+### As a developer
 
 ```bash
 git clone https://github.com/King8848/AI-Local-Guide-Frameworl.git
-
-# 1. Prepare TripData JSON (see schema/trip-data.json)
-# 2. Inject into templates/demo.html
-# 3. Generate a complete travel guide page
 ```
 
-### As a Contributor
+Then:
+1. Prepare a TripData JSON (see [schema/trip-data.json](schema/trip-data.json))
+2. Inject it into [templates/demo.html](templates/demo.html)
+3. Open the browser. There's your guide.
+
+### As a contributor
 
 1. Fork the repo
 2. Add a city pack: `knowledge/china/cities/{city}.md`
@@ -215,39 +256,38 @@ git clone https://github.com/King8848/AI-Local-Guide-Frameworl.git
 
 ---
 
-## Project Structure
+## Project structure
 
 ```
 AI-Travel-Skill-Core/
-├── LICENSE.md              # Apache License 2.0
-├── LICENSE                 # Apache License 2.0 (full text)
-├── NOTICE                  # Third-party notices
-├── README.md               # This file (bilingual)
-├── .env.example            # Environment variables template
+├── LICENSE                   # Apache License 2.0
+├── NOTICE                    # Third-party notices
+├── README.md                 # This file (bilingual)
+├── .env.example              # Environment variables template
 ├── .gitignore
-├── SKILL.md                # Agent entry point
+├── SKILL.md                  # Agent entry point
 ├── docs/
-│   ├── architecture.md     # System architecture
-│   └── template-engine.md  # Template engine guide
+│   ├── architecture.md       # System architecture
+│   └── template-engine.md    # Template engine guide
 ├── references/
-│   ├── workflow.md         # User interaction workflow
-│   ├── planner.md          # Trip planning engine
-│   ├── budget.md           # Budget engine
-│   ├── formatter.md        # Output formatter
-│   └── router.md           # Intent router
-├── providers/              # Pluggable provider interfaces
-│   ├── README.md           # Provider interface docs
-│   ├── flyai-provider.md   # FlyAI search adapter
+│   ├── workflow.md           # User interaction workflow
+│   ├── planner.md            # Trip planning engine
+│   ├── budget.md             # Budget engine
+│   ├── formatter.md          # Output formatter
+│   └── router.md             # Intent router
+├── providers/                # Pluggable provider interfaces
+│   ├── README.md             # Provider interface docs
+│   ├── flyai-provider.md     # FlyAI search adapter
 │   └── openfreemap-provider.md # Free map tiles
 ├── schema/
-│   └── trip-data.json      # TripData JSON Schema
+│   └── trip-data.json        # TripData JSON Schema
 ├── templates/
-│   └── demo.html           # Simple demo template
+│   └── demo.html             # Simple demo template
 ├── examples/
-│   └── sample-output.md    # Example output
+│   └── sample-output.md      # Example output
 └── knowledge/
-    ├── README.md           # Knowledge base docs
-    ├── china/              # Chinese city packs
+    ├── README.md             # Knowledge base docs
+    ├── china/                # Chinese city packs
     │   ├── cities/
     │   │   ├── _template.md
     │   │   ├── 杭州.md
@@ -256,7 +296,7 @@ AI-Travel-Skill-Core/
     │   ├── culture/
     │   ├── travel/
     │   └── avoid/
-    ├── international/      # International city packs
+    ├── international/        # International city packs
     │   ├── _template.md
     │   └── tokyo.md
     └── common/
@@ -267,9 +307,9 @@ AI-Travel-Skill-Core/
 
 ---
 
-## Core vs Commercial
+## Open source vs custom
 
-This project provides the **open-source foundation** for building AI travel agents, helping developers quickly build their own travel assistants or tourism agents.
+This framework is the **open foundation** for building travel agents.
 
 The open-source edition includes:
 - ✅ AI Travel Skill basic framework
@@ -277,13 +317,11 @@ The open-source edition includes:
 - ✅ Demo templates & sample cities
 - ✅ Freely extensible trip planning pipeline
 
-For a more complete, personalized travel experience, check out the **Commercial Edition**.
+For a more complete, personal travel experience, there's the **custom edition**.
 
-### Custom Edition (Commercial)
+### Custom edition (Commercial)
 
 The custom edition focuses on **one person, one plan** — generating a tailored travel solution based on your needs, rather than applying a fixed template.
-
-Compared to the open-source edition, the custom edition offers:
 
 | Feature | Open Source | Custom |
 |---------|:------:|:------:|
@@ -322,7 +360,7 @@ The custom edition is ideal for:
 | 🔌 Provider Interface | Pluggable weather/map/search |
 | 📦 Zero Dependencies | Works with any AI agent platform |
 
-You can fully customize your own AI travel planner with local data — zero data leakage, no big data surveillance.
+You can run this framework entirely locally — data never leaves your machine, no big data surveillance, no privacy concerns.
 
 ---
 
@@ -336,6 +374,8 @@ You can fully customize your own AI travel planner with local data — zero data
 - [ ] 2-3 provider implementations
 - [ ] Plugin interface stable
 - [ ] Multi-language support
+
+What I'm most excited about next is **community city packs** — when enough people contribute knowledge about their own cities, the framework actually starts to "get" travel. If you're from somewhere, consider contributing a city pack. Even if it's just a few shops you love.
 
 ---
 
@@ -354,7 +394,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## License
 
-[Apache License 2.0](LICENSE.md)
+[Apache License 2.0](LICENSE)
 
 Third-party notices: [NOTICE](NOTICE)
 
