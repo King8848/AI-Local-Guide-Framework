@@ -88,25 +88,7 @@ AI-Travel-Skill-Core/
 
 This project provides the **open foundation** for building travel agents.
 
-| Component | Open Source | Commercial |
-|-----------|:-----------:|:----------:|
-| Skill architecture (Router/Planner/Formatter) | ✅ | ✅ |
-| TripData Schema | ✅ | ✅ |
-| Provider interface | ✅ | ✅ |
-| Demo template | ✅ | ✅ |
-| Knowledge base structure | ✅ | ✅ |
-| City packs (community) | ✅ | ✅ |
-| Advanced templates | ❌ | ✅ |
-| Private knowledge base  | ❌ | ✅ |
-| Dianping/XHS scraping integration | ❌ | ✅ |
-| FlyAI full integration | ❌ | ✅ |
-| Real-time price / inventory | ❌ | ✅ |
-| Production pipeline| ❌ | ✅ |
-| Advanced prompts / commercial workflows | ❌ | ✅ |
-
-**Advanced templates, proprietary datasets, private workflows, and commercial integrations are maintained separately.**
-
-For commercial inquiries: WeChat `Hoyeye-Z`
+The knowledge base includes **basic city packs** for demonstration. For full-depth city guides, proprietary datasets, and production-ready integrations — a custom version is available.
 
 ---
 
@@ -255,25 +237,7 @@ AI-Travel-Skill-Core/
 
 本项目提供构建旅行助手的**开放底座**。
 
-| 能力 | 开源版 | 商业版 |
-|------|:------:|:------:|
-| 技能架构（Router/Planner/Formatter） | ✅ | ✅ |
-| TripData Schema 数据协议 | ✅ | ✅ |
-| Provider 接口 | ✅ | ✅ |
-| Demo 模板 | ✅ | ✅ |
-| 知识库结构 | ✅ | ✅ |
-| 城市知识包（社区贡献） | ✅ | ✅ |
-| 高级模板（暗色玻璃态、Apple 风） | ❌ | ✅ |
-| 私有知识库（37+ 城市深度攻略） | ❌ | ✅ |
-| 大众点评/小红书数据抓取 | ❌ | ✅ |
-| FlyAI 完整集成 | ❌ | ✅ |
-| 实时价格/库存数据 | ❌ | ✅ |
-| 生产级流水线（批量生成） | ❌ | ✅ |
-| 高级 Prompt / 商业工作流 | ❌ | ✅ |
-
-**高级模板、私有数据集、商业工作流和生产级集成另行维护。**
-
-商业合作请加微信：`Hoyeye-Z`
+知识库包含**基础城市包**供演示使用。如需完整深度城市攻略、私有数据集和生产级集成，可获取定制版本。
 
 ---
 
@@ -313,13 +277,6 @@ AI-Travel-Skill-Core/
 - 📖 文档改进
 
 详见 [CONTRIBUTING.md](CONTRIBUTING.md)
-
----
-
-## 联系
-
-- GitHub Issues
-- 微信：Hoyeye-Z
 
 ---
 
