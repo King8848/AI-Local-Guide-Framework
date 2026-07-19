@@ -95,7 +95,7 @@ AI Travel Skill Core
 
 | Provider | 类型 | 许可证 | 状态 |
 |----------|------|--------|------|
-| [FlyAI](https://github.com/flyai) | search | MIT | 可用 |
+| FlyAI ⭐ | search | MIT | 官方推荐 |
 | [OpenFreeMap](https://github.com/hyperknot/openfreemap) | map | MIT | 可用 |
 | [OpenStreetMap](https://www.openstreetmap.org) | map | ODbL | 可用 |
 | [OpenWeatherMap](https://openweathermap.org) | weather | 可用 | 需 API Key |
