@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>旅行搭子 · 行程控制中心</title>
+  <meta name="description" content="和搭子一起规划行程、清单与预算的移动端旅行助手" />
+  <meta name="color-scheme" content="light dark" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['ui-sans-serif', 'system-ui', 'sans-serif'],
+            serif: ['ui-serif', 'serif'],
+          },
+          colors: {
+            background: 'var(--background)',
+            foreground: 'var(--foreground)',
+            card: 'var(--card)',
+            'card-foreground': 'var(--card-foreground)',
+            primary: 'var(--primary)',
+            'primary-foreground': 'var(--primary-foreground)',
+            secondary: 'var(--secondary)',
+            'secondary-foreground': 'var(--secondary-foreground)',
+            muted: 'var(--muted)',
+            'muted-foreground': 'var(--muted-foreground)',
+            accent: 'var(--accent)',
+            'accent-foreground': 'var(--accent-foreground)',
+            destructive: 'var(--destructive)',
+            border: 'var(--border)',
+            input: 'var(--input)',
+            ring: 'var(--ring)',
+          },
+          borderRadius: {
+            '2xl': 'calc(var(--radius) * 1.8)',
+            '3xl': 'calc(var(--radius) * 2.2)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --background: #f7f5ef;
+      --foreground: #1e293b;
+      --card: #ffffff;
+      --card-foreground: #1e293b;
+      --popover: #ffffff;
+      --popover-foreground: #1e293b;
+      --primary: #2b8f9c;
+      --primary-foreground: #ffffff;
+      --secondary: #f1f0eb;
+      --secondary-foreground: #334155;
+      --muted: #eae8e2;
+      --muted-foreground: #64748b;
+      --accent: #e8a84a;
+      --accent-foreground: #3d2205;
+      --destructive: #c0392b;
+      --border: #e2dfd8;
+      --input: #e2dfd8;
+      --ring: #2b8f9c;
+      --radius: 0.9rem;
+    }
+    .dark {
+      --background: #1a1f26;
+      --foreground: #e8e6e1;
+      --card: #232a33;
+      --card-foreground: #e8e6e1;
+      --popover: #232a33;
+      --popover-foreground: #e8e6e1;
+      --primary: #5ec5cf;
+      --primary-foreground: #0f172a;
+      --secondary: #2d3642;
+      --secondary-foreground: #e8e6e1;
+      --muted: #2d3642;
+      --muted-foreground: #94a3b8;
+      --accent: #f0b86a;
+      --accent-foreground: #1a1205;
+      --destructive: #e74c3c;
+      --border: rgba(255,255,255,0.1);
+      --input: rgba(255,255,255,0.14);
+      --ring: #5ec5cf;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--foreground);
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      transition: background 0.3s, color 0.3s;
+    }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* ── Animations ── */
+    @keyframes float-cloud {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(8px); }
+    }
+    .animate-float-cloud { animation: float-cloud 4s ease-in-out infinite; }
+
+    @keyframes sun-pulse {
+      0%, 100% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.1); opacity: 1; }
+    }
+    .animate-sun-pulse { animation: sun-pulse 3s ease-in-out infinite; }
+
+    @keyframes rain-drop {
+      0% { transform: translateY(-4px); opacity: 0; }
+      30% { opacity: 1; }
+      100% { transform: translateY(6px); opacity: 0; }
+    }
+    .animate-rain { animation: rain-drop 1.2s ease-in infinite; }
+    .animate-rain-2 { animation: rain-drop 1.2s ease-in 0.4s infinite; }
+    .animate-rain-3 { animation: rain-drop 1.2s ease-in 0.8s infinite; }
+
+    @keyframes snow-fall {
+      0% { transform: translateY(-4px) rotate(0deg); opacity: 0; }
+      30% { opacity: 1; }
+      100% { transform: translateY(8px) rotate(180deg); opacity: 0; }
+    }
+    .animate-snow { animation: snow-fall 2s ease-in infinite; }
+    .animate-snow-2 { animation: snow-fall 2s ease-in 0.7s infinite; }
+
+    @keyframes lightning-flash {
+      0%, 90%, 100% { opacity: 0; }
+      92%, 96% { opacity: 1; }
+    }
+    .animate-lightning { animation: lightning-flash 3s ease-in-out infinite; }
+
+    @keyframes fog-drift {
+      0%, 100% { transform: translateX(0); opacity: 0.6; }
+      50% { transform: translateX(5px); opacity: 0.9; }
+    }
+    .animate-fog { animation: fog-drift 3s ease-in-out infinite; }
+    .animate-fog-2 { animation: fog-drift 3.5s ease-in-out 1s infinite; }
+
+    @keyframes rise-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-rise-in { animation: rise-in 0.4s ease-out both; }
+
+    /* ── Weather Background Layers ── */
+    .weather-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      transition: opacity 0.8s ease;
+    }
+    .weather-sunny {
+      background: linear-gradient(135deg, rgba(255,200,80,0.18) 0%, rgba(255,160,30,0.10) 50%, transparent 100%);
+    }
+    .weather-cloudy {
+      background: linear-gradient(160deg, rgba(140,160,190,0.22) 0%, rgba(100,130,160,0.12) 60%, transparent 100%);
+    }
+    .weather-rainy {
+      background: linear-gradient(180deg, rgba(60,90,140,0.28) 0%, rgba(40,70,120,0.15) 100%);
+    }
+    .weather-snowy {
+      background: linear-gradient(180deg, rgba(200,220,255,0.30) 0%, rgba(180,210,255,0.15) 100%);
+    }
+    .weather-stormy {
+      background: linear-gradient(180deg, rgba(30,30,60,0.45) 0%, rgba(20,20,50,0.25) 100%);
+    }
+    .weather-foggy {
+      background: linear-gradient(180deg, rgba(220,225,235,0.40) 0%, rgba(200,210,225,0.20) 100%);
+    }
+
+    /* ── Hero Collapse (mobile only) ── */
+    .hero-section {
+      transition: border-radius 0.35s ease, box-shadow 0.35s ease;
+      border-radius: 1.5rem;
+    }
+    .hero-cover-wrap {
+      transition: height 0.42s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+      height: 14rem;
+      overflow: hidden;
+      border-radius: 1.5rem;
+      position: relative;
+    }
+    .hero-section.collapsed .hero-cover-wrap {
+      height: 0;
+      opacity: 0;
+    }
+    .hero-section.collapsed {
+      border-radius: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .hero-bottom-content {
+      transition: all 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .hero-section.collapsed .hero-bottom-content {
+      position: static !important;
+      padding: 0.875rem 1rem !important;
+      background: linear-gradient(135deg, var(--primary) 0%, #1e6b75 100%);
+      border-radius: 1rem;
+    }
+    .hero-section.collapsed .hero-top { display: none !important; }
+    .hero-section.collapsed .hero-title { font-size: 1rem !important; }
+    .hero-section.collapsed .hero-subtitle { display: none !important; }
+    .hero-section.collapsed .hero-meta-row { display: none !important; }
+    .hero-section.collapsed .hero-compact-row { display: flex !important; }
+    .hero-section.collapsed .hero-progress { transform: scale(0.75); }
+
+    .hero-compact-row { display: none; }
+
+    /* ── Tab Bar Sticky ── */
+    .tab-bar-wrapper { transition: all 0.3s ease; }
+    .tab-bar-wrapper.stuck {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: var(--background);
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+      margin: 0 -1rem;
+      padding-left: 1rem;
+      padding-right: 1rem;
+      box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+    }
+    @media (min-width: 1024px) {
+      .tab-bar-wrapper.stuck {
+        position: static; margin: 0; padding: 0; box-shadow: none; background: transparent;
+      }
+      .hero-section.collapsed .hero-cover-wrap { height: 14rem; opacity: 1; }
+      .hero-section.collapsed .hero-bottom-content { position: absolute !important; padding: 1.25rem !important; background: none !important; }
+      .hero-section.collapsed .hero-top { display: flex !important; }
+      .hero-section.collapsed .hero-title { font-size: 1.5rem !important; }
+      .hero-section.collapsed .hero-subtitle { display: block !important; }
+      .hero-section.collapsed .hero-meta-row { display: flex !important; }
+      .hero-section.collapsed .hero-compact-row { display: none !important; }
+      .hero-section.collapsed .hero-progress { transform: scale(1); }
+    }
+
+    /* ── Map Marker ── */
+    .trip-marker {
+      display: flex; align-items: center; justify-content: center;
+      width: 30px; height: 30px; border-radius: 9999px;
+      color: #fff; font-size: 13px; font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+      border: 2px solid #fff; cursor: pointer; position: relative;
+      transition: transform 0.15s ease;
+    }
+    .trip-marker:hover { transform: scale(1.15); }
+    .dark .trip-marker { border-color: #232a33; }
+
+    @keyframes map-pulse {
+      0% { transform: translate(-50%,-50%) scale(1); opacity: 0.8; }
+      100% { transform: translate(-50%,-50%) scale(3.8); opacity: 0; }
+    }
+    .map-pulse-ring {
+      position: absolute; left: 50%; top: 50%;
+      width: 30px; height: 30px; border-radius: 50%;
+      border: 2px solid currentColor;
+      animation: map-pulse 0.75s ease-out forwards;
+      pointer-events: none; z-index: 10;
+    }
+
+    @keyframes map-expand {
+      from { transform: scale(0.93) translateY(28px); opacity: 0; }
+      to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    .map-expand-anim { animation: map-expand 0.38s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+    @keyframes btn-ripple {
+      0% { box-shadow: 0 0 0 0 rgba(43,143,156,0.5); }
+      70% { box-shadow: 0 0 0 14px rgba(43,143,156,0); }
+      100% { box-shadow: 0 0 0 0 rgba(43,143,156,0); }
+    }
+    .map-btn-ripple { animation: btn-ripple 1.4s ease-out; }
+
+    .maplibregl-popup-content {
+      background: var(--card) !important; color: var(--card-foreground) !important;
+      border-radius: 12px !important; padding: 8px 12px !important;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15) !important;
+      border: 1px solid var(--border) !important;
+    }
+    .maplibregl-popup-tip { border-top-color: var(--card) !important; }
+
+    input, select {
+      background: var(--muted);
+      color: var(--foreground);
+      border: none;
+      outline: none;
+    }
+    input::placeholder { color: var(--muted-foreground); opacity: 0.7; }
+
+    .guide-warning { border-color: rgba(192,57,43,0.25); background: rgba(192,57,43,0.05); }
+    .dark .guide-warning { border-color: rgba(231,76,60,0.25); background: rgba(231,76,60,0.08); }
+    .guide-food    { border-color: rgba(217,138,43,0.25); background: rgba(217,138,43,0.05); }
+    .dark .guide-food    { border-color: rgba(240,184,106,0.25); background: rgba(240,184,106,0.08); }
+    .guide-tip     { border-color: rgba(43,143,156,0.25); background: rgba(43,143,156,0.05); }
+    .dark .guide-tip     { border-color: rgba(94,197,207,0.25); background: rgba(94,197,207,0.08); }
+    .guide-note    { border-color: rgba(111,116,176,0.25); background: rgba(111,116,176,0.05); }
+    .dark .guide-note    { border-color: rgba(150,155,210,0.25); background: rgba(150,155,210,0.08); }
+
+    @media (min-width: 1024px) {
+      #guides-list { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    }
+
+    .badge-countdown { background: var(--accent); color: var(--accent-foreground); }
+    .badge-ongoing   { background: rgba(43,143,156,0.18); color: var(--primary); border: 1px solid rgba(43,143,156,0.3); }
+    .dark .badge-ongoing { background: rgba(94,197,207,0.15); color: var(--primary); border-color: rgba(94,197,207,0.25); }
+    .badge-ended     { background: rgba(100,116,139,0.15); color: var(--muted-foreground); }
+  </style>
+</head>
+<body class="antialiased">
+
+<script id="trip-data" type="application/json">
+{
+  "trip": {
+    "id": 1,
+    "title": "上海·苏州 五日漫游",
+    "subtitle": "漫步外滩与园林，感受江南韵味",
+    "destination": "上海 / 苏州",
+    "start_date": "2025-08-15",
+    "end_date": "2025-08-19",
+    "budget_total": 8000,
+    "weather_temp": 32,
+    "weather_desc": "多云",
+    "weather_icon": "cloud-sun"
+  },
+  "itinerary": [
+    { "id": 1, "trip_id": 1, "day_index": 1, "day_label": "Day 1", "day_date": "2025-08-15", "time_label": "09:00", "title": "抵达上海 · 虹桥机场", "category": "traffic", "location_name": "上海虹桥国际机场", "address": "上海市闵行区迎宾一路300号", "lat": 31.1979, "lng": 121.3356, "duration": "—", "note": "提前叫车前往酒店放行李", "done": false, "sort_order": 1 },
+    { "id": 2, "trip_id": 1, "day_index": 1, "day_label": "Day 1", "day_date": "2025-08-15", "time_label": "11:00", "title": "武康路漫步", "category": "spot", "location_name": "武康路历史文化名街", "address": "上海市徐汇区武康路", "lat": 31.2108, "lng": 121.4376, "duration": "2h", "note": "老洋房、咖啡馆、梧桐树影", "done": false, "sort_order": 2 },
+    { "id": 3, "trip_id": 1, "day_index": 1, "day_label": "Day 1", "day_date": "2025-08-15", "time_label": "13:30", "title": "午餐 · 本帮菜", "category": "food", "location_name": "老吉士酒家", "address": "上海市徐汇区天平路41号", "lat": 31.2085, "lng": 121.4355, "duration": "1.5h", "note": "红烧肉、蟹粉豆腐必点", "done": false, "sort_order": 3 },
+    { "id": 4, "trip_id": 1, "day_index": 1, "day_label": "Day 1", "day_date": "2025-08-15", "time_label": "16:00", "title": "外滩日落", "category": "spot", "location_name": "外滩", "address": "上海市黄浦区中山东一路", "lat": 31.2397, "lng": 121.4998, "duration": "2h", "note": "17:30 左右到达最佳，拍夕阳", "done": false, "sort_order": 4 },
+    { "id": 5, "trip_id": 1, "day_index": 1, "day_label": "Day 1", "day_date": "2025-08-15", "time_label": "19:30", "title": "晚餐 · 南京东路", "category": "food", "location_name": "南京东路步行街", "address": "上海市黄浦区南京东路", "lat": 31.2354, "lng": 121.4805, "duration": "1.5h", "note": "沈大成青团、蟹壳黄", "done": false, "sort_order": 5 },
+    { "id": 6, "trip_id": 1, "day_index": 2, "day_label": "Day 2", "day_date": "2025-08-16", "time_label": "09:30", "title": "豫园 & 城隍庙", "category": "spot", "location_name": "豫园", "address": "上海市黄浦区安仁街132号", "lat": 31.2274, "lng": 121.4922, "duration": "3h", "note": "门票40元，建议早去避开人流", "done": false, "sort_order": 1 },
+    { "id": 7, "trip_id": 1, "day_index": 2, "day_label": "Day 2", "day_date": "2025-08-16", "time_label": "13:00", "title": "小笼包午餐", "category": "food", "location_name": "南翔馒头店", "address": "上海市黄浦区豫园路85号", "lat": 31.2278, "lng": 121.4915, "duration": "1h", "note": "蟹粉小笼必点", "done": false, "sort_order": 2 },
+    { "id": 8, "trip_id": 1, "day_index": 2, "day_label": "Day 2", "day_date": "2025-08-16", "time_label": "15:00", "title": "上海博物馆", "category": "spot", "location_name": "上海博物馆", "address": "上海市黄浦区人民大道201号", "lat": 31.2304, "lng": 121.4737, "duration": "2.5h", "note": "免费需预约，青铜器和陶瓷馆必看", "done": false, "sort_order": 3 },
+    { "id": 9, "trip_id": 1, "day_index": 2, "day_label": "Day 2", "day_date": "2025-08-16", "time_label": "19:00", "title": "晚餐 · 新天地", "category": "food", "location_name": "上海新天地", "address": "上海市黄浦区太仓路181弄", "lat": 31.2217, "lng": 121.4751, "duration": "2h", "note": "石库门里的融合菜", "done": false, "sort_order": 4 },
+    { "id": 10, "trip_id": 1, "day_index": 3, "day_label": "Day 3", "day_date": "2025-08-17", "time_label": "08:00", "title": "高铁前往苏州", "category": "traffic", "location_name": "上海虹桥站", "address": "上海市闵行区申贵路1500号", "lat": 31.1959, "lng": 121.3207, "duration": "30min", "note": "G字头约25分钟", "done": false, "sort_order": 1 },
+    { "id": 11, "trip_id": 1, "day_index": 3, "day_label": "Day 3", "day_date": "2025-08-17", "time_label": "10:00", "title": "拙政园", "category": "spot", "location_name": "拙政园", "address": "苏州市姑苏区东北街178号", "lat": 31.3224, "lng": 120.6262, "duration": "3h", "note": "中国四大名园之首，门票80元", "done": false, "sort_order": 2 },
+    { "id": 12, "trip_id": 1, "day_index": 3, "day_label": "Day 3", "day_date": "2025-08-17", "time_label": "14:00", "title": "苏式面午餐", "category": "food", "location_name": "同得兴面馆", "address": "苏州市姑苏区十全街", "lat": 31.3001, "lng": 120.6271, "duration": "1h", "note": "枫镇大肉面、三虾面", "done": false, "sort_order": 3 },
+    { "id": 13, "trip_id": 1, "day_index": 3, "day_label": "Day 3", "day_date": "2025-08-17", "time_label": "16:00", "title": "平江路", "category": "spot", "location_name": "平江路历史街区", "address": "苏州市姑苏区平江路", "lat": 31.3162, "lng": 120.6326, "duration": "2h", "note": "沿河漫步，听评弹", "done": false, "sort_order": 4 },
+    { "id": 14, "trip_id": 1, "day_index": 3, "day_label": "Day 3", "day_date": "2025-08-17", "time_label": "19:00", "title": "观前街", "category": "shop", "location_name": "观前街", "address": "苏州市姑苏区观前街", "lat": 31.3109, "lng": 120.6258, "duration": "1.5h", "note": "采芝斋糖果、苏绣手信", "done": false, "sort_order": 5 },
+    { "id": 15, "trip_id": 1, "day_index": 4, "day_label": "Day 4", "day_date": "2025-08-18", "time_label": "09:00", "title": "虎丘", "category": "spot", "location_name": "虎丘山风景名胜区", "address": "苏州市姑苏区虎丘山门内8号", "lat": 31.3383, "lng": 120.5736, "duration": "3h", "note": "吴中第一名胜，云岩寺塔", "done": false, "sort_order": 1 },
+    { "id": 16, "trip_id": 1, "day_index": 4, "day_label": "Day 4", "day_date": "2025-08-18", "time_label": "13:00", "title": "午餐 · 苏帮菜", "category": "food", "location_name": "得月楼", "address": "苏州市姑苏区观前街太监弄", "lat": 31.3112, "lng": 120.6261, "duration": "1.5h", "note": "松鼠鳜鱼、响油鳝糊", "done": false, "sort_order": 2 },
+    { "id": 17, "trip_id": 1, "day_index": 4, "day_label": "Day 4", "day_date": "2025-08-18", "time_label": "15:30", "title": "山塘街", "category": "spot", "location_name": "山塘街", "address": "苏州市姑苏区山塘街", "lat": 31.3168, "lng": 120.5791, "duration": "2.5h", "note": "七里山塘到虎丘，夜景更美", "done": false, "sort_order": 3 },
+    { "id": 18, "trip_id": 1, "day_index": 4, "day_label": "Day 4", "day_date": "2025-08-18", "time_label": "19:30", "title": "山塘晚餐", "category": "food", "location_name": "松鹤楼", "address": "苏州市姑苏区山塘街", "lat": 31.3172, "lng": 120.5795, "duration": "1.5h", "note": "百年老店", "done": false, "sort_order": 4 },
+    { "id": 19, "trip_id": 1, "day_index": 5, "day_label": "Day 5", "day_date": "2025-08-19", "time_label": "09:00", "title": "留园", "category": "spot", "location_name": "留园", "address": "苏州市姑苏区留园路338号", "lat": 31.3177, "lng": 120.5936, "duration": "2.5h", "note": "中国四大名园之一，太湖石冠云峰", "done": false, "sort_order": 1 },
+    { "id": 20, "trip_id": 1, "day_index": 5, "day_label": "Day 5", "day_date": "2025-08-19", "time_label": "12:00", "title": "午餐 · 评弹茶馆", "category": "food", "location_name": "琵琶语评弹茶馆", "address": "苏州市姑苏区平江路", "lat": 31.3165, "lng": 120.6323, "duration": "2h", "note": "边听评弹边品茶吃苏式点心", "done": false, "sort_order": 2 },
+    { "id": 21, "trip_id": 1, "day_index": 5, "day_label": "Day 5", "day_date": "2025-08-19", "time_label": "15:00", "title": "返程 · 苏州站", "category": "traffic", "location_name": "苏州站", "address": "苏州市姑苏区苏站路27号", "lat": 31.3304, "lng": 120.6144, "duration": "—", "note": "高铁回沪或直飞", "done": false, "sort_order": 3 }
+  ],
+  "checklist": [
+    { "id": 1, "trip_id": 1, "label": "身份证", "checked": true, "sort_order": 1 },
+    { "id": 2, "trip_id": 1, "label": "学生证（门票半价）", "checked": false, "sort_order": 2 },
+    { "id": 3, "trip_id": 1, "label": "手机充电器 / 充电宝", "checked": true, "sort_order": 3 },
+    { "id": 4, "trip_id": 1, "label": "相机 + 存储卡", "checked": false, "sort_order": 4 },
+    { "id": 5, "trip_id": 1, "label": "轻薄防晒衣", "checked": false, "sort_order": 5 },
+    { "id": 6, "trip_id": 1, "label": "遮阳帽", "checked": false, "sort_order": 6 },
+    { "id": 7, "trip_id": 1, "label": "舒适步行鞋", "checked": true, "sort_order": 7 },
+    { "id": 8, "trip_id": 1, "label": "防晒霜", "checked": false, "sort_order": 8 },
+    { "id": 9, "trip_id": 1, "label": "驱蚊液", "checked": false, "sort_order": 9 },
+    { "id": 10, "trip_id": 1, "label": "雨伞 / 雨衣", "checked": false, "sort_order": 10 },
+    { "id": 11, "trip_id": 1, "label": "常用药品", "checked": false, "sort_order": 11 },
+    { "id": 12, "trip_id": 1, "label": "现金零钱", "checked": false, "sort_order": 12 }
+  ],
+  "expenses": [
+    { "id": 1, "trip_id": 1, "category": "交通", "amount": 1160, "day_index": null, "created_at": "2025-08-01" },
+    { "id": 2, "trip_id": 1, "category": "住宿", "amount": 1200, "day_index": null, "created_at": "2025-08-01" },
+    { "id": 3, "trip_id": 1, "category": "住宿", "amount": 800, "day_index": null, "created_at": "2025-08-01" },
+    { "id": 4, "trip_id": 1, "category": "门票", "amount": 80, "day_index": 1, "created_at": "2025-08-15" },
+    { "id": 5, "trip_id": 1, "category": "餐饮", "amount": 240, "day_index": 1, "created_at": "2025-08-15" },
+    { "id": 6, "trip_id": 1, "category": "餐饮", "amount": 180, "day_index": 1, "created_at": "2025-08-15" }
+  ],
+  "guides": [
+    { "id": 1, "type": "warning", "title": "豫园人挤人", "content": "周末和节假日上午10点后人流量极大，建议8:30前入园。" },
+    { "id": 2, "type": "food", "title": "苏州三虾面", "content": "每年5-6月限定，虾仁、虾脑、虾籽三位一体，同得兴和裕兴记最出名。" },
+    { "id": 3, "type": "tip", "title": "上海博物馆预约", "content": "提前3天在公众号预约，周一闭馆，建议约上午场避开旅行团。" },
+    { "id": 4, "type": "note", "title": "苏州园林联票", "content": "拙政园+留园+虎丘联票比单买便宜约30%，可在各景点窗口或官方小程序购买。" },
+    { "id": 5, "type": "warning", "title": "山塘街商业化", "content": "主街同质化严重，建议走旁边小巷体验真实生活。" },
+    { "id": 6, "type": "food", "title": "小笼包冷知识", "content": "正宗吃法是先咬破皮吸汤，再蘸姜醋吃，切勿一口闷。" },
+    { "id": 7, "type": "tip", "title": "苏州评弹体验", "content": "平江路琵琶语茶馆，下午场30元/位，可点曲，吴侬软语值得体验。" },
+    { "id": 8, "type": "note", "title": "外滩拍照机位", "content": "北外滩滨江步道人更少，可拍到陆家嘴三件套全景，导航至【世界会客厅】。" }
+  ]
+}
+</script>
+
+<main id="app" class="mx-auto min-h-screen w-full max-w-6xl px-4 pb-10 pt-4 lg:px-6">
+  <div class="lg:grid lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-6">
+    <!-- main column -->
+    <div class="space-y-5" id="main-col">
+
+      <!-- ═════ Hero Card ═════ -->
+      <section id="hero" class="hero-section relative overflow-hidden shadow-lg">
+        <div class="hero-cover-wrap">
+          <img id="hero-cover"
+               src="https://images.unsplash.com/photo-1538428494232-9c0d8a3ab403?w=800&q=80"
+               alt="封面" class="h-full w-full object-cover" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/45" style="z-index:1"></div>
+          <div id="weather-bg-layer" class="weather-layer" style="z-index:2"></div>
+          <div id="weather-particle-layer" class="weather-layer" style="z-index:3"></div>
+
+          <div class="hero-top absolute inset-x-0 top-0 flex items-start justify-between p-4" style="z-index:4">
+            <div id="weather-badge" class="flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 backdrop-blur-md">
+              <div id="weather-icon" class="shrink-0"></div>
+              <div class="leading-tight text-white">
+                <div id="weather-temp" class="text-sm font-bold">--°</div>
+                <div id="weather-desc" class="text-[11px] opacity-80">--</div>
+              </div>
+            </div>
+            <button id="theme-toggle" type="button" aria-label="切换主题"
+              class="rounded-full bg-white/15 p-2.5 text-white backdrop-blur-md transition hover:bg-white/25">
+              <i data-lucide="moon" class="h-4 w-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- bottom content -->
+        <div class="hero-bottom-content absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-5" style="z-index:4">
+          <div class="min-w-0 text-white">
+            <h1 id="trip-title" class="hero-title text-pretty font-serif text-2xl font-bold leading-tight">--</h1>
+            <p id="trip-subtitle" class="hero-subtitle mt-0.5 truncate text-sm text-white/85">--</p>
+            
+            <div id="hero-meta-row" class="hero-meta-row mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-white/85">
+              <span class="inline-flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span id="trip-dest">--</span>
+              </span>
+              <span class="opacity-50">·</span>
+              <span class="inline-flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                <span id="trip-dates">--</span>
+              </span>
+              <span class="opacity-50">·</span>
+              <span class="inline-flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+                <span id="trip-budget">--</span>
+              </span>
+            </div>
+            <!-- 紧凑行（折叠时显示） -->
+            <div class="hero-compact-row mt-1 items-center gap-2 text-xs text-white/90">
+              <span id="compact-dest" class="font-medium"></span>
+              <span class="opacity-50">·</span>
+              <span id="compact-dates"></span>
+              <span class="opacity-50">·</span>
+              <span id="compact-budget"></span>
+              <span class="opacity-50">·</span>
+              <span id="compact-weather" class="flex items-center gap-1">
+                <span id="compact-weather-icon"></span>
+                <span id="compact-weather-temp"></span>
+              </span>
+            </div>
+            
+            <span id="countdown" class="mt-2 inline-block rounded-full px-3 py-1 text-xs font-semibold hidden"></span>
+          </div>
+          <!-- progress ring -->
+          <div class="hero-progress relative h-16 w-16 shrink-0 transition-transform">
+            <svg viewBox="0 0 60 60" class="h-16 w-16 -rotate-90">
+              <circle cx="30" cy="30" r="26" fill="none" stroke-width="6" class="stroke-white/25" />
+              <circle id="progress-ring" cx="30" cy="30" r="26" fill="none" stroke-width="6" stroke-linecap="round"
+                class="stroke-[var(--accent)] transition-all duration-500" stroke-dasharray="163.36" stroke-dashoffset="163.36" />
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+              <span id="progress-pct" class="text-sm font-bold leading-none">0%</span>
+              <span class="text-[9px] opacity-80">已打卡</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═════ Segmented Tabs ═════ -->
+      <div id="tab-bar-wrapper" class="tab-bar-wrapper">
+        <div id="segmented-tabs" role="tablist" aria-label="行程模块"
+          class="flex gap-1 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-1 shadow-sm">
+          <button data-tab="itinerary" role="tab" aria-selected="true"
+            class="flex flex-1 items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-medium transition bg-[var(--primary)] text-[var(--primary-foreground)] shadow sm:text-sm sm:gap-1.5">
+            <i data-lucide="calendar-range" class="h-3.5 w-3.5 sm:h-4 sm:w-4"></i>行程
+          </button>
+          <button data-tab="checklist" role="tab" aria-selected="false"
+            class="flex flex-1 items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-medium transition text-[var(--muted-foreground)] hover:bg-[var(--muted)] sm:text-sm sm:gap-1.5">
+            <i data-lucide="list-checks" class="h-3.5 w-3.5 sm:h-4 sm:w-4"></i>清单
+          </button>
+          <button data-tab="budget" role="tab" aria-selected="false"
+            class="flex flex-1 items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-medium transition text-[var(--muted-foreground)] hover:bg-[var(--muted)] sm:text-sm sm:gap-1.5">
+            <i data-lucide="wallet" class="h-3.5 w-3.5 sm:h-4 sm:w-4"></i>预算
+          </button>
+          <button data-tab="guides" role="tab" aria-selected="false"
+            class="flex flex-1 items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-medium transition text-[var(--muted-foreground)] hover:bg-[var(--muted)] sm:text-sm sm:gap-1.5">
+            <i data-lucide="book-open" class="h-3.5 w-3.5 sm:h-4 sm:w-4"></i>指南
+          </button>
+        </div>
+      </div>
+
+      <!-- ═════ Tab Content ═════ -->
+      <div id="tab-content">
+
+        <!-- Itinerary -->
+        <div id="tab-itinerary" class="space-y-4">
+          <div id="day-selector" class="flex gap-2 overflow-x-auto pb-1"></div>
+          <ol id="timeline" class="relative space-y-3 pl-6">
+            <span class="absolute left-[9px] top-2 bottom-2 w-px bg-[var(--border)]" aria-hidden></span>
+          </ol>
+        </div>
+
+        <!-- Checklist -->
+        <div id="tab-checklist" class="space-y-4 hidden">
+          <div class="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-sm">
+            <div class="flex items-center justify-between text-sm">
+              <span class="font-semibold">打包进度</span>
+              <span id="checklist-progress-text" class="text-[var(--muted-foreground)]">0/0 已完成</span>
+            </div>
+            <div class="mt-2 h-2.5 overflow-hidden rounded-full bg-[var(--muted)]">
+              <div id="checklist-progress-bar" class="h-full rounded-full bg-[var(--primary)] transition-all duration-500" style="width:0%"></div>
+            </div>
+          </div>
+          <form id="checklist-form" class="flex gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-2 shadow-sm">
+            <input id="cl-label" aria-label="新增物品" class="min-w-0 flex-1 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--ring)]" placeholder="添加要带的东西…" />
+            <button type="submit" aria-label="添加" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] transition hover:opacity-90">
+              <i data-lucide="plus" class="h-4 w-4"></i>
+            </button>
+          </form>
+          <ul id="checklist-list" class="space-y-2"></ul>
+        </div>
+
+        <!-- Budget -->
+        <div id="tab-budget" class="space-y-4 hidden">
+          <div class="flex items-center gap-5 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm">
+            <div class="relative h-28 w-28 shrink-0">
+              <svg viewBox="0 0 100 100" class="h-28 w-28 -rotate-90">
+                <circle cx="50" cy="50" r="42" fill="none" stroke-width="9" class="stroke-[var(--muted)]" />
+                <circle id="budget-ring" cx="50" cy="50" r="42" fill="none" stroke-width="9" stroke-linecap="round"
+                  class="stroke-[var(--primary)]" stroke-dasharray="263.89" stroke-dashoffset="263.89" style="transition: stroke-dashoffset .5s ease" />
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <span id="budget-pct" class="text-xl font-bold">0%</span>
+                <span class="text-[11px] text-[var(--muted-foreground)]">已花费</span>
+              </div>
+            </div>
+            <div class="flex-1 space-y-2 text-sm">
+              <div class="flex items-center justify-between"><span class="text-[var(--muted-foreground)]">总预算</span><span id="budget-total" class="font-semibold">¥0</span></div>
+              <div class="flex items-center justify-between"><span class="text-[var(--muted-foreground)]">已花费</span><span id="budget-spent" class="font-semibold">¥0</span></div>
+              <div class="flex items-center justify-between"><span id="budget-remaining-label" class="text-[var(--muted-foreground)]">剩余</span><span id="budget-remaining" class="font-bold text-[var(--primary)]">¥0</span></div>
+            </div>
+          </div>
+          <div id="category-breakdown" class="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-sm hidden">
+            <h3 class="mb-3 text-sm font-semibold">分类占比</h3>
+            <div id="category-bars" class="space-y-2.5"></div>
+          </div>
+          <form id="expense-form" class="flex gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-3 shadow-sm">
+            <select id="ex-category" aria-label="分类" class="w-24 rounded-xl px-2 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--ring)]">
+              <option>交通</option><option>住宿</option><option>餐饮</option><option>门票</option><option>购物</option><option>其他</option>
+            </select>
+            <input id="ex-amount" inputmode="decimal" aria-label="金额" placeholder="金额 ¥" class="min-w-0 flex-1 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--ring)]" />
+            <button type="submit" class="inline-flex items-center gap-1 rounded-xl bg-[var(--primary)] px-4 py-2 text-sm font-medium text-[var(--primary-foreground)] transition hover:opacity-90">
+              <i data-lucide="plus" class="h-4 w-4"></i>记一笔
+            </button>
+          </form>
+          <ul id="expense-list" class="space-y-2"></ul>
+        </div>
+
+        <!-- Guides -->
+        <div id="tab-guides" class="space-y-3 hidden">
+          <div id="guides-list" class="space-y-3"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- desktop map sidebar -->
+    <aside class="hidden lg:block">
+      <div class="sticky top-4 h-[calc(100dvh-2rem)] overflow-hidden rounded-3xl border border-[var(--border)] shadow-lg">
+        <div id="map-desktop" class="h-full w-full"></div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- mobile floating map button -->
+  <button id="mobile-map-btn" aria-label="打开地图"
+    class="fixed bottom-5 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--primary)] text-[var(--primary-foreground)] shadow-xl transition hover:scale-105 lg:hidden">
+    <i data-lucide="map" class="h-6 w-6"></i>
+  </button>
+
+  <!-- mobile map overlay -->
+  <div id="mobile-map-overlay" class="fixed inset-0 z-50 hidden lg:hidden">
+    <div class="map-expand-anim absolute inset-x-0 bottom-0 top-16 overflow-hidden rounded-t-3xl border border-[var(--border)] bg-[var(--card)] shadow-2xl">
+      <div class="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
+        <span id="mobile-map-title" class="text-sm font-semibold">路线地图</span>
+        <button id="mobile-map-close" aria-label="关闭地图" class="rounded-full p-1 text-[var(--muted-foreground)] hover:bg-[var(--muted)]">
+          <i data-lucide="x" class="h-5 w-5"></i>
+        </button>
+      </div>
+      <div class="h-[calc(100%-49px)]">
+        <div id="map-mobile" class="h-full w-full"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nav Sheet -->
+  <div id="nav-sheet" class="fixed inset-0 z-50 flex items-end justify-center hidden">
+    <button id="nav-sheet-backdrop" aria-label="关闭" class="absolute inset-0 bg-black/50 backdrop-blur-sm"></button>
+    <div class="relative z-10 w-full max-w-md animate-rise-in rounded-t-3xl border border-[var(--border)] bg-[var(--card)] p-5 pb-8 shadow-2xl">
+      <div class="mb-4 flex items-start justify-between">
+        <div class="flex items-center gap-2">
+          <span class="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--primary)]/10 text-[var(--primary)]">
+            <i data-lucide="navigation" class="h-5 w-5"></i>
+          </span>
+          <div>
+            <h3 class="font-semibold">前往 <span id="nav-title">--</span></h3>
+            <p class="flex items-center gap-1 text-xs text-[var(--muted-foreground)]">
+              <i data-lucide="map-pin" class="h-3 w-3"></i><span id="nav-location">--</span>
+            </p>
+          </div>
+        </div>
+        <button id="nav-sheet-close" aria-label="关闭" class="rounded-full p-1 text-[var(--muted-foreground)] hover:bg-[var(--muted)]">
+          <i data-lucide="x" class="h-5 w-5"></i>
+        </button>
+      </div>
+      <div id="nav-links" class="grid grid-cols-2 gap-2"></div>
+      <p id="nav-address" class="mt-3 text-center text-xs text-[var(--muted-foreground)] hidden"></p>
+    </div>
+  </div>
+</main>
+
+<script>
+/* ═══════════════════════════════════════════════════════ */
+/*  核心逻辑（已修复地图切换主题、快速切换日期 bug）       */
+/* ═══════════════════════════════════════════════════════ */
+
+const raw = JSON.parse(document.getElementById('trip-data').textContent);
+let trip = raw.trip;
+let itinerary = raw.itinerary;
+let checklist = raw.checklist;
+let expenses = raw.expenses;
+let guides = raw.guides || [];
+
+let nextId = Math.max(
+  ...itinerary.map(i=>i.id),
+  ...checklist.map(i=>i.id),
+  ...expenses.map(i=>i.id),
+  ...guides.map(i=>i.id), 0
+) + 1;
+
+let dark = false;
+let activeTab = 'itinerary';
+let activeDay = (() => {
+  const days = Array.from(new Set(itinerary.map(i => i.day_index))).sort((a,b) => a-b);
+  return days.length > 0 ? days[0] : 1;
+})();
+let isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+let mapMobile = null, mapDesktop = null;
+let markersMobile = [], markersDesktop = [];
+let focusId = null;
+
+const storedTheme = localStorage.getItem('trip-theme');
+if (storedTheme === 'dark' || (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+  dark = true;
+  document.documentElement.classList.add('dark');
+}
+
+const categoryConfig = {
+  spot:    { label: '景点', hex: '#2b8f9c', className: 'bg-[#2b8f9c]/12 text-[#2b8f9c]' },
+  food:    { label: '美食', hex: '#d98a2b', className: 'bg-[#e8a84a]/20 text-[#3d2205]' },
+  shop:    { label: '购物', hex: '#4f9d69', className: 'bg-[#4f9d69]/15 text-[#4f9d69]' },
+  traffic: { label: '交通', hex: '#c0563f', className: 'bg-[#c0563f]/15 text-[#c0563f]' },
+  other:   { label: '其他', hex: '#6f74b0', className: 'bg-[#6f74b0]/15 text-[#6f74b0]' },
+};
+const categoryColors = {
+  '交通':'#2b8f9c', '住宿':'#6f74b0', '餐饮':'#e8a84a', '门票':'#4f9d69', '购物':'#d98a2b', '其他':'#94a3b8'
+};
+
+const guideTypeConfig = {
+  warning: { label: '避坑', icon: 'alert-triangle', color: '#c0392b', className: 'guide-warning' },
+  food:    { label: '美食', icon: 'utensils',       color: '#d98a2b', className: 'guide-food' },
+  tip:     { label: '贴士', icon: 'lightbulb',      color: '#2b8f9c', className: 'guide-tip' },
+  note:    { label: '注意', icon: 'info',           color: '#6f74b0', className: 'guide-note' },
+};
+
+function getWeatherType(icon) {
+  if (!icon) return 'cloudy';
+  const i = icon.toLowerCase();
+  if (i.includes('sun') && !i.includes('cloud')) return 'sunny';
+  if (i.includes('cloud-sun') || i.includes('sun-cloud') || i.includes('partly')) return 'partly-cloudy';
+  if (i.includes('cloud') && !i.includes('rain') && !i.includes('snow') && !i.includes('storm')) return 'cloudy';
+  if (i.includes('rain') || i.includes('drizzle') || i.includes('shower')) return 'rainy';
+  if (i.includes('snow') || i.includes('sleet')) return 'snowy';
+  if (i.includes('storm') || i.includes('thunder') || i.includes('lightning')) return 'stormy';
+  if (i.includes('fog') || i.includes('mist') || i.includes('haze')) return 'foggy';
+  const d = (trip.weather_desc || '').toLowerCase();
+  if (d.includes('晴')) return 'sunny';
+  if (d.includes('多云') || d.includes('阴')) return 'cloudy';
+  if (d.includes('雨')) return 'rainy';
+  if (d.includes('雪')) return 'snowy';
+  if (d.includes('雾') || d.includes('霾')) return 'foggy';
+  if (d.includes('雷')) return 'stormy';
+  return 'cloudy';
+}
+
+function renderWeatherBg() {
+  const type = getWeatherType(trip.weather_icon);
+  const bgLayer = document.getElementById('weather-bg-layer');
+  const particleLayer = document.getElementById('weather-particle-layer');
+  bgLayer.className = 'weather-layer';
+  const classMap = {
+    'sunny': 'weather-sunny',
+    'partly-cloudy': 'weather-cloudy',
+    'cloudy': 'weather-cloudy',
+    'rainy': 'weather-rainy',
+    'snowy': 'weather-snowy',
+    'stormy': 'weather-stormy',
+    'foggy': 'weather-foggy',
+  };
+  bgLayer.classList.add(classMap[type] || 'weather-cloudy');
+  particleLayer.innerHTML = '';
+  if (type === 'sunny') {
+    particleLayer.innerHTML = `
+      <div style="position:absolute;top:-20px;right:20px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(255,200,60,0.22) 0%,transparent 70%);animation:sun-pulse 3s ease-in-out infinite;"></div>
+    `;
+  } else if (type === 'partly-cloudy') {
+    particleLayer.innerHTML = `
+      <div style="position:absolute;top:8px;right:30px;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(255,190,50,0.18) 0%,transparent 70%);animation:sun-pulse 3s ease-in-out infinite;"></div>
+      <svg style="position:absolute;top:18px;right:10px;opacity:0.35;" xmlns="http://www.w3.org/2000/svg" width="48" height="32" viewBox="0 0 48 32" fill="white" class="animate-float-cloud">
+        <ellipse cx="24" cy="22" rx="22" ry="10"/>
+        <ellipse cx="16" cy="16" rx="12" ry="9"/>
+        <ellipse cx="30" cy="14" rx="10" ry="8"/>
+      </svg>
+    `;
+  } else if (type === 'cloudy') {
+    particleLayer.innerHTML = `
+      <svg style="position:absolute;top:10px;right:15px;opacity:0.28;" xmlns="http://www.w3.org/2000/svg" width="70" height="40" viewBox="0 0 70 40" fill="white" class="animate-float-cloud">
+        <ellipse cx="35" cy="30" rx="33" ry="12"/>
+        <ellipse cx="22" cy="22" rx="16" ry="12"/>
+        <ellipse cx="46" cy="20" rx="14" ry="11"/>
+      </svg>
+      <svg style="position:absolute;top:30px;left:20px;opacity:0.18;" xmlns="http://www.w3.org/2000/svg" width="50" height="28" viewBox="0 0 50 28" fill="white" class="animate-float-cloud" style="animation-delay:1s">
+        <ellipse cx="25" cy="20" rx="23" ry="9"/>
+        <ellipse cx="16" cy="14" rx="11" ry="8"/>
+        <ellipse cx="34" cy="13" rx="10" ry="7"/>
+      </svg>
+    `;
+  } else if (type === 'rainy') {
+    particleLayer.innerHTML = `
+      <svg style="position:absolute;top:6px;right:20px;opacity:0.30;" xmlns="http://www.w3.org/2000/svg" width="60" height="34" viewBox="0 0 60 34" fill="#aac8e8" class="animate-float-cloud">
+        <ellipse cx="30" cy="26" rx="28" ry="10"/>
+        <ellipse cx="18" cy="18" rx="14" ry="10"/>
+        <ellipse cx="40" cy="16" rx="12" ry="9"/>
+      </svg>
+      <div style="position:absolute;bottom:20px;left:0;right:0;display:flex;justify-content:space-around;padding:0 20px;">
+        ${Array.from({length:7},(_,i)=>`<div style="width:1.5px;height:10px;background:rgba(140,180,220,0.55);border-radius:2px;animation:rain-drop 1.2s ease-in ${(i*0.17).toFixed(2)}s infinite;"></div>`).join('')}
+      </div>
+    `;
+  } else if (type === 'snowy') {
+    particleLayer.innerHTML = `
+      <div style="position:absolute;inset:0;overflow:hidden;">
+        ${Array.from({length:8},(_,i)=>`<div style="position:absolute;width:5px;height:5px;border-radius:50%;background:rgba(220,235,255,0.7);left:${10+i*11}%;top:${15+Math.sin(i)*20}%;animation:snow-fall ${1.8+i*0.2}s ease-in ${(i*0.25).toFixed(2)}s infinite;"></div>`).join('')}
+      </div>
+    `;
+  } else if (type === 'stormy') {
+    particleLayer.innerHTML = `
+      <svg style="position:absolute;top:5px;right:15px;opacity:0.35;" xmlns="http://www.w3.org/2000/svg" width="65" height="38" viewBox="0 0 65 38" fill="#7090b0" class="animate-float-cloud">
+        <ellipse cx="32" cy="28" rx="30" ry="11"/>
+        <ellipse cx="20" cy="20" rx="15" ry="11"/>
+        <ellipse cx="44" cy="18" rx="13" ry="10"/>
+      </svg>
+      <div style="position:absolute;top:30px;left:50%;transform:translateX(-50%);width:2px;height:28px;background:linear-gradient(to bottom,rgba(255,240,100,0.9),transparent);clip-path:polygon(40% 0%,60% 0%,100% 50%,60% 50%,80% 100%,20% 50%,40% 50%);animation:lightning-flash 3s ease-in-out infinite;"></div>
+    `;
+  } else if (type === 'foggy') {
+    particleLayer.innerHTML = `
+      <div style="position:absolute;top:20px;left:0;right:0;height:12px;background:rgba(210,218,230,0.35);border-radius:6px;animation:fog-drift 3s ease-in-out infinite;"></div>
+      <div style="position:absolute;top:40px;left:10%;right:5%;height:10px;background:rgba(210,218,230,0.25);border-radius:5px;animation:fog-drift 3.5s ease-in-out 1s infinite;"></div>
+    `;
+  }
+}
+
+function fmtDateRange(s, e) {
+  const a = new Date(s), b = new Date(e);
+  const f = d => `${d.getMonth()+1}/${d.getDate()}`;
+  return `${f(a)}-${f(b)}`;
+}
+function fmtDateRangeLong(s, e) {
+  const a = new Date(s), b = new Date(e);
+  const f = d => `${d.getMonth()+1}月${d.getDate()}日`;
+  return `${f(a)} - ${f(b)}`;
+}
+function getTripStatus() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const start = new Date(trip.start_date); start.setHours(0,0,0,0);
+  const end = new Date(trip.end_date); end.setHours(0,0,0,0);
+  const diffStart = Math.round((start.getTime()-today.getTime())/86400000);
+  const diffEnd = Math.round((end.getTime()-today.getTime())/86400000);
+  const totalDays = Math.round((end.getTime()-start.getTime())/86400000) + 1;
+  if (diffStart > 0) return { type: 'countdown', text: `还有 ${diffStart} 天出发`, badge: 'badge-countdown' };
+  if (diffEnd >= 0) {
+    const dayNum = Math.round((today.getTime()-start.getTime())/86400000) + 1;
+    return { type: 'ongoing', text: `旅途进行中 · 第 ${dayNum}/${totalDays} 天`, badge: 'badge-ongoing' };
+  }
+  return { type: 'ended', text: '旅途已结束', badge: 'badge-ended' };
+}
+
+function getDays() {
+  const map = new Map();
+  for (const item of itinerary) {
+    if (!map.has(item.day_index)) {
+      map.set(item.day_index, { index: item.day_index, label: item.day_label || `Day ${item.day_index}`, date: item.day_date });
+    }
+  }
+  return Array.from(map.values()).sort((a,b)=>a.index-b.index);
+}
+
+function weatherIconSvg(icon) {
+  const type = getWeatherType(icon);
+  if (type === 'sunny') return `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#e8a84a] animate-sun-pulse"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`;
+  if (type === 'cloudy') return `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/90 animate-float-cloud"><path d="M17.5 19H6.5a5 5 0 1 1 .78-9.93A7 7 0 1 1 17.5 19Z"/></svg>`;
+  if (type === 'rainy') return `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#7ab0d4]"><path d="M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25"/><line x1="8" x2="8" y1="19" y2="21"/><line x1="8" x2="8" y1="23" y2="25" class="animate-rain"/><line x1="12" x2="12" y1="21" y2="23"/><line x1="16" x2="16" y1="19" y2="21"/></svg>`;
+  if (type === 'snowy') return `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#b0c8e8]"><path d="M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25"/><path d="M8 16h.01M8 20h.01M12 18h.01M12 22h.01M16 16h.01M16 20h.01"/></svg>`;
+  if (type === 'stormy') return `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#f0d060] animate-lightning"><path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"/><polyline points="13 11 9 17 15 17 11 23"/></svg>`;
+  if (type === 'foggy') return `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white/70 animate-fog"><path d="M3 10h18M3 14h18M3 18h18"/></svg>`;
+  return `<div class="relative flex items-center"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#e8a84a] animate-sun-pulse"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="-ml-2 text-white/90 animate-float-cloud"><path d="M17.5 19H6.5a5 5 0 1 1 .78-9.93A7 7 0 1 1 17.5 19Z"/></svg></div>`;
+}
+
+// ── 渲染 Hero ──
+function renderHero() {
+  document.getElementById('trip-title').textContent = trip.title;
+  const subtitleEl = document.getElementById('trip-subtitle');
+  subtitleEl.textContent = trip.subtitle || '';
+  subtitleEl.style.display = trip.subtitle ? '' : 'none';
+
+  const dest = trip.destination;
+  const dates = fmtDateRange(trip.start_date, trip.end_date);
+  const budgetStr = `预算 ¥${trip.budget_total.toLocaleString()}`;
+
+  document.getElementById('trip-dest').textContent = dest;
+  document.getElementById('trip-dates').textContent = fmtDateRangeLong(trip.start_date, trip.end_date);
+  document.getElementById('trip-budget').textContent = budgetStr;
+
+  document.getElementById('compact-dest').textContent = dest;
+  document.getElementById('compact-dates').textContent = dates;
+  document.getElementById('compact-budget').textContent = budgetStr;
+  
+  // 紧凑行天气
+  document.getElementById('compact-weather-icon').innerHTML = weatherIconSvg(trip.weather_icon);
+  document.getElementById('compact-weather-temp').textContent = (trip.weather_temp ?? '--') + '°';
+
+  document.getElementById('weather-temp').textContent = (trip.weather_temp ?? '--') + '°';
+  document.getElementById('weather-desc').textContent = trip.weather_desc || '--';
+  document.getElementById('weather-icon').innerHTML = weatherIconSvg(trip.weather_icon);
+
+  renderWeatherBg();
+
+  const cd = document.getElementById('countdown');
+  const status = getTripStatus();
+  cd.textContent = status.text;
+  cd.className = `mt-2 inline-block rounded-full px-3 py-1 text-xs font-semibold ${status.badge}`;
+  cd.classList.remove('hidden');
+
+  const done = itinerary.filter(i=>i.done).length;
+  const total = itinerary.length;
+  const pct = total > 0 ? Math.round((done/total)*100) : 0;
+  const ring = 2 * Math.PI * 26;
+  const offset = ring - (pct/100)*ring;
+  document.getElementById('progress-ring').setAttribute('stroke-dashoffset', offset);
+  document.getElementById('progress-pct').textContent = pct + '%';
+}
+
+// ── 渲染行程 ──
+function renderItinerary() {
+  const days = getDays();
+  const ds = document.getElementById('day-selector');
+  ds.innerHTML = days.map(d => {
+    const dateLabel = d.date ? `${new Date(d.date+'T00:00:00').getMonth()+1}/${new Date(d.date+'T00:00:00').getDate()}` : '';
+    const active = d.index === activeDay;
+    return `<button data-day="${d.index}" class="flex shrink-0 flex-col items-center rounded-xl border px-4 py-2 transition ${active ? 'border-[var(--primary)] bg-[var(--primary)] text-[var(--primary-foreground)] shadow' : 'border-[var(--border)] bg-[var(--card)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]'}"><span class="text-sm font-semibold">${d.label}</span><span class="text-[11px] opacity-80">${dateLabel}</span></button>`;
+  }).join('');
+  ds.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => { activeDay = +btn.dataset.day; renderItinerary(); updateMap(); });
+  });
+
+  const items = itinerary.filter(i => i.day_index === activeDay).sort((a,b)=>a.sort_order-b.sort_order);
+  const tl = document.getElementById('timeline');
+  tl.innerHTML = '<span class="absolute left-[9px] top-2 bottom-2 w-px bg-[var(--border)]" aria-hidden></span>' +
+    items.map((item, idx) => {
+      const cfg = categoryConfig[item.category] || categoryConfig.spot;
+      return `
+      <li class="relative animate-rise-in">
+        <span class="absolute -left-6 top-4 flex h-[18px] w-[18px] items-center justify-center rounded-full border-2 border-[var(--background)] text-[10px] font-bold text-white" style="background:${cfg.hex}" aria-hidden>${idx+1}</span>
+        <article class="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-sm transition ${item.done?'opacity-60':''}">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>${item.time_label || ''}</span>
+                ${item.duration && item.duration !== '—' ? `<span class="rounded-full bg-[var(--muted)] px-2 py-0.5">${item.duration}</span>` : ''}
+              </div>
+              <h3 class="mt-1 text-base font-semibold ${item.done?'line-through':''}">${item.title}</h3>
+              <div class="mt-1 flex items-center gap-1.5 text-sm text-[var(--muted-foreground)]">
+                <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs ${cfg.className}">${cfg.label}</span>
+                <span class="truncate">${item.location_name || ''}</span>
+              </div>
+              ${item.note ? `<p class="mt-1.5 text-xs text-[var(--muted-foreground)]">${item.note}</p>` : ''}
+            </div>
+            <button data-id="${item.id}" aria-label="${item.done?'标记为未打卡':'标记为已打卡'}"
+              class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition ${item.done ? 'border-[var(--primary)] bg-[var(--primary)] text-[var(--primary-foreground)]' : 'border-[var(--border)] bg-[var(--background)] text-transparent hover:border-[var(--primary)]'}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+          </div>
+          <div class="mt-3 flex gap-2">
+            <button data-focus="${item.id}" class="inline-flex items-center gap-1 rounded-lg bg-[var(--muted)] px-3 py-1.5 text-xs font-medium text-[var(--foreground)] transition hover:bg-[var(--secondary)]">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>
+              地图定位
+            </button>
+            <button data-nav="${item.id}" class="inline-flex items-center gap-1 rounded-lg bg-[var(--primary)]/10 px-3 py-1.5 text-xs font-medium text-[var(--primary)] transition hover:bg-[var(--primary)]/20">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+              导航前往
+            </button>
+          </div>
+        </article>
+      </li>`;
+    }).join('');
+
+  tl.querySelectorAll('button[data-id]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = +btn.dataset.id;
+      const item = itinerary.find(i=>i.id===id);
+      if (item) { item.done = !item.done; renderHero(); renderItinerary(); }
+    });
+  });
+  tl.querySelectorAll('button[data-focus]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = +btn.dataset.focus;
+      const item = itinerary.find(i=>i.id===id);
+      if (!item) return;
+      if (isDesktop && mapDesktop) { flyToItem(item); }
+      else { focusId = id; openMapOverlay(); }
+    });
+  });
+  tl.querySelectorAll('button[data-nav]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = +btn.dataset.nav;
+      const item = itinerary.find(i=>i.id===id);
+      if (item) openNavSheet(item);
+    });
+  });
+  
+  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+}
+
+// ── 清单 ──
+function renderChecklist() {
+  const total = checklist.length;
+  const done = checklist.filter(i=>i.checked).length;
+  const pct = total > 0 ? Math.round((done/total)*100) : 0;
+  document.getElementById('checklist-progress-text').textContent = `${done}/${total} 已完成`;
+  document.getElementById('checklist-progress-bar').style.width = pct + '%';
+
+  const list = document.getElementById('checklist-list');
+  list.innerHTML = checklist.map(item => `
+    <li class="group flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 shadow-sm animate-rise-in">
+      <button data-cl-id="${item.id}" aria-label="${item.checked?'取消勾选':'勾选'}"
+        class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border transition ${item.checked ? 'border-[var(--primary)] bg-[var(--primary)] text-[var(--primary-foreground)]' : 'border-[var(--border)] bg-[var(--background)] text-transparent hover:border-[var(--primary)]'}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </button>
+      <span class="flex-1 text-sm ${item.checked?'text-[var(--muted-foreground)] line-through':''}">${item.label}</span>
+      <button data-cl-del="${item.id}" aria-label="删除" class="text-[var(--muted-foreground)] opacity-0 transition hover:text-[var(--destructive)] group-hover:opacity-100">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+      </button>
+    </li>
+  `).join('');
+
+  list.querySelectorAll('button[data-cl-id]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = +btn.dataset.clId;
+      const item = checklist.find(i=>i.id===id);
+      if (item) { item.checked = !item.checked; renderChecklist(); renderHero(); }
+    });
+  });
+  list.querySelectorAll('button[data-cl-del]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      checklist = checklist.filter(i=>i.id!==+btn.dataset.clDel);
+      renderChecklist(); renderHero();
+    });
+  });
+  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+}
+
+// ── 预算 ──
+function renderBudget() {
+  const spent = expenses.reduce((s,e)=>s+e.amount, 0);
+  const remaining = trip.budget_total - spent;
+  const pct = trip.budget_total > 0 ? Math.min(100, Math.round((spent/trip.budget_total)*100)) : 0;
+  const over = spent > trip.budget_total;
+
+  const ring = 2 * Math.PI * 42;
+  const offset = ring - (pct/100)*ring;
+  document.getElementById('budget-ring').setAttribute('stroke-dashoffset', offset);
+  document.getElementById('budget-ring').setAttribute('class', over ? 'stroke-[var(--destructive)]' : 'stroke-[var(--primary)]');
+  document.getElementById('budget-pct').textContent = pct + '%';
+  document.getElementById('budget-total').textContent = '¥' + trip.budget_total.toLocaleString();
+  document.getElementById('budget-spent').textContent = '¥' + spent.toLocaleString();
+  const remEl = document.getElementById('budget-remaining');
+  remEl.textContent = (over ? '-' : '') + '¥' + Math.abs(remaining).toLocaleString();
+  remEl.className = 'font-bold ' + (over ? 'text-[var(--destructive)]' : 'text-[var(--primary)]');
+  document.getElementById('budget-remaining-label').textContent = over ? '超支' : '剩余';
+
+  const byCat = Object.entries(
+    expenses.reduce((acc,e)=>{ acc[e.category]=(acc[e.category]||0)+e.amount; return acc; }, {})
+  ).sort((a,b)=>b[1]-a[1]);
+  const cb = document.getElementById('category-breakdown');
+  if (byCat.length) {
+    cb.classList.remove('hidden');
+    document.getElementById('category-bars').innerHTML = byCat.map(([cat, amt]) => {
+      const w = spent > 0 ? Math.round((amt/spent)*100) : 0;
+      const color = categoryColors[cat] || 'var(--primary)';
+      return `<div><div class="mb-1 flex items-center justify-between text-xs"><span class="text-[var(--muted-foreground)]">${cat}</span><span class="font-medium">¥${amt.toLocaleString()} · ${w}%</span></div><div class="h-2 overflow-hidden rounded-full bg-[var(--muted)]"><div class="h-full rounded-full transition-all duration-500" style="width:${w}%;background:${color}"></div></div></div>`;
+    }).join('');
+  } else cb.classList.add('hidden');
+
+  document.getElementById('expense-list').innerHTML = expenses.slice().reverse().map(e => {
+    const color = categoryColors[e.category] || 'var(--primary)';
+    return `
+      <li class="group flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 shadow-sm">
+        <span class="h-8 w-1.5 shrink-0 rounded-full" style="background:${color}" aria-hidden></span>
+        <div class="min-w-0 flex-1">
+          <div class="truncate text-sm font-medium">${e.category}</div>
+        </div>
+        <span class="text-sm font-semibold">¥${e.amount.toLocaleString()}</span>
+        <button data-ex-del="${e.id}" aria-label="删除" class="text-[var(--muted-foreground)] opacity-0 transition hover:text-[var(--destructive)] group-hover:opacity-100">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+        </button>
+      </li>`;
+  }).join('');
+
+  document.getElementById('expense-list').querySelectorAll('button[data-ex-del]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      expenses = expenses.filter(e=>e.id!==+btn.dataset.exDel);
+      renderBudget();
+    });
+  });
+  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+}
+
+// ── 指南 ──
+function renderGuides() {
+  const container = document.getElementById('guides-list');
+  const iconSvgs = {
+    'alert-triangle': '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>',
+    'utensils': '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>',
+    'lightbulb': '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>',
+    'info': '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>',
+  };
+  container.innerHTML = guides.map(g => {
+    const cfg = guideTypeConfig[g.type] || guideTypeConfig.note;
+    const iconSvg = iconSvgs[cfg.icon] || iconSvgs['info'];
+    return `
+      <article class="rounded-2xl border p-4 shadow-sm transition hover:shadow-md ${cfg.className}">
+        <div class="flex items-start gap-3">
+          <span class="mt-0.5 shrink-0 rounded-full p-1.5" style="background:${cfg.color}18; color:${cfg.color}">${iconSvg}</span>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h4 class="text-sm font-semibold">${g.title}</h4>
+              <span class="rounded-full px-2 py-0.5 text-[10px] font-medium" style="background:${cfg.color}18; color:${cfg.color}">${cfg.label}</span>
+            </div>
+            <p class="mt-1 text-sm text-[var(--muted-foreground)] leading-relaxed">${g.content}</p>
+          </div>
+        </div>
+      </article>`;
+  }).join('');
+  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+}
+
+// ── Tabs ──
+function switchTab(key) {
+  activeTab = key;
+  ['itinerary','checklist','budget','guides'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('hidden', t!==key);
+  });
+  document.querySelectorAll('#segmented-tabs button').forEach(btn => {
+    const isActive = btn.dataset.tab === key;
+    btn.setAttribute('aria-selected', isActive);
+    btn.className = `flex flex-1 items-center justify-center gap-1 rounded-xl px-2 py-2 text-xs font-medium transition sm:text-sm sm:gap-1.5 ${isActive ? 'bg-[var(--primary)] text-[var(--primary-foreground)] shadow' : 'text-[var(--muted-foreground)] hover:bg-[var(--muted)]'}`;
+  });
+  if (key === 'checklist') renderChecklist();
+  if (key === 'budget') renderBudget();
+  if (key === 'guides') renderGuides();
+}
+
+document.querySelectorAll('#segmented-tabs button').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
+// ── Theme toggle ──
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  dark = !dark;
+  document.documentElement.classList.toggle('dark', dark);
+  localStorage.setItem('trip-theme', dark ? 'dark' : 'light');
+  document.getElementById('theme-toggle').innerHTML = dark
+    ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>'
+    : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>';
+  updateMapStyle();
+  renderWeatherBg();
+});
+
+// ── Nav Sheet ──
+function openNavSheet(item) {
+  const sheet = document.getElementById('nav-sheet');
+  document.getElementById('nav-title').textContent = item.title;
+  document.getElementById('nav-location').textContent = item.location_name || '';
+  const addr = document.getElementById('nav-address');
+  if (item.address) { addr.textContent = item.address; addr.classList.remove('hidden'); }
+  else addr.classList.add('hidden');
+  const name = encodeURIComponent(item.title);
+  const { lat, lng } = item;
+  document.getElementById('nav-links').innerHTML = [
+    { label: '高德地图', href: `https://uri.amap.com/marker?position=${lng},${lat}&name=${name}&coordinate=gaode` },
+    { label: '百度地图', href: `https://api.map.baidu.com/marker?location=${lat},${lng}&title=${name}&content=${name}&output=html&coord_type=gcj02` },
+    { label: '腾讯地图', href: `https://apis.map.qq.com/uri/v1/marker?marker=coord:${lat},${lng};title:${name}&referer=trip` },
+    { label: 'Apple 地图', href: `https://maps.apple.com/?q=${name}&ll=${lat},${lng}` },
+  ].map(l => `<a href="${l.href}" target="_blank" rel="noopener noreferrer" class="rounded-xl border border-[var(--border)] bg-[var(--background)] py-3 text-center text-sm font-medium transition hover:border-[var(--primary)] hover:bg-[var(--muted)]">${l.label}</a>`).join('');
+  sheet.classList.remove('hidden');
+  if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+}
+function closeNavSheet() { document.getElementById('nav-sheet').classList.add('hidden'); }
+document.getElementById('nav-sheet-backdrop').addEventListener('click', closeNavSheet);
+document.getElementById('nav-sheet-close').addEventListener('click', closeNavSheet);
+
+// ── Map ──
+function buildStyle(darkMode) {
+  return 'https://tiles.openfreemap.org/styles/liberty';
+}
+function initMap(el) {
+  const map = new maplibregl.Map({ container: el, style: buildStyle(dark), center: [121.49, 31.23], zoom: 11, attributionControl: false });
+  map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+  return map;
+}
+
+// 【修复】切换深色模式时等待样式加载完成再重绘
+function updateMapStyle() {
+  const style = buildStyle(dark);
+  if (mapDesktop) {
+    mapDesktop.setStyle(style);
+    mapDesktop.once('idle', () => updateMap());
+  }
+  if (mapMobile) {
+    mapMobile.setStyle(style);
+    mapMobile.once('idle', () => updateMap());
+  }
+}
+
+function drawRoute(map, items) {
+  const coords = items.map(i => [i.lng, i.lat]);
+  if (map.getLayer('route-line')) map.removeLayer('route-line');
+  if (map.getSource('route')) map.removeSource('route');
+  if (coords.length > 1) {
+    map.addSource('route', { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: coords } } });
+    map.addLayer({ id: 'route-line', type: 'line', source: 'route', paint: { 'line-color': dark ? '#5ec5cf' : '#2b8f9c', 'line-width': 3, 'line-dasharray': [2, 1.5], 'line-opacity': 0.8 } });
+  }
+}
+function renderMarkers(map, markerArr, items) {
+  markerArr.forEach(m => m.remove());
+  markerArr.length = 0;
+  items.forEach((item, idx) => {
+    const cfg = categoryConfig[item.category] || categoryConfig.spot;
+    const el = document.createElement('div');
+    el.className = 'trip-marker';
+    el.style.background = cfg.hex;
+    el.textContent = String(idx + 1);
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      el.querySelectorAll('.map-pulse-ring').forEach(p => p.remove());
+      const pulse = document.createElement('div');
+      pulse.className = 'map-pulse-ring';
+      pulse.style.color = cfg.hex;
+      el.appendChild(pulse);
+      setTimeout(() => pulse.remove(), 800);
+    });
+    const popup = new maplibregl.Popup({ offset: 18, closeButton: false }).setHTML(
+      `<div style="font-weight:600;font-size:13px">${item.title}</div><div style="font-size:11px;opacity:.7">${item.location_name||''}</div>`
+    );
+    const marker = new maplibregl.Marker({ element: el }).setLngLat([item.lng, item.lat]).setPopup(popup).addTo(map);
+    markerArr.push(marker);
+  });
+}
+
+// 【修复】绘制时实时取最新数据，避免闭包缓存错乱
+function updateMap() {
+  [mapDesktop, mapMobile].forEach((map, idx) => {
+    if (!map) return;
+    const markers = idx === 0 ? markersDesktop : markersMobile;
+    const draw = () => {
+      const currentItems = itinerary
+        .filter(i => i.day_index === activeDay && i.lat != null && i.lng != null)
+        .sort((a, b) => a.sort_order - b.sort_order);
+      
+      // 清空旧标记
+      markers.forEach(m => m.remove());
+      markers.length = 0;
+      
+      drawRoute(map, currentItems);
+      renderMarkers(map, markers, currentItems);
+      
+      if (currentItems.length > 0) {
+        const bounds = new maplibregl.LngLatBounds();
+        currentItems.forEach(i => bounds.extend([i.lng, i.lat]));
+        map.fitBounds(bounds, { padding: 60, maxZoom: 14, duration: 700 });
+      }
+    };
+    if (map.isStyleLoaded()) draw();
+    else map.once('idle', draw);
+  });
+}
+
+function flyToItem(item) {
+  [mapDesktop, mapMobile].forEach(map => {
+    if (map && item.lat != null && item.lng != null) {
+      map.flyTo({ center: [item.lng, item.lat], zoom: 14.5, duration: 800 });
+    }
+  });
+}
+
+// ── Mobile Map Overlay ──
+function openMapOverlay() {
+  const el = document.getElementById('mobile-map-overlay');
+  el.classList.remove('hidden');
+  const panel = el.querySelector('.map-expand-anim');
+  panel.style.animation = 'none';
+  panel.offsetHeight;
+  panel.style.animation = '';
+
+  const btn = document.getElementById('mobile-map-btn');
+  btn.classList.remove('map-btn-ripple');
+  btn.offsetHeight;
+  btn.classList.add('map-btn-ripple');
+  setTimeout(() => btn.classList.remove('map-btn-ripple'), 1400);
+
+  if (!mapMobile) {
+    setTimeout(() => {
+      mapMobile = initMap('map-mobile');
+      updateMap();
+    }, 50);
+  } else {
+    setTimeout(() => mapMobile.resize(), 50);
+    if (focusId != null) {
+      const item = itinerary.find(i=>i.id===focusId);
+      if (item) setTimeout(() => flyToItem(item), 200);
+    }
+  }
+  focusId = null;
+}
+document.getElementById('mobile-map-btn').addEventListener('click', openMapOverlay);
+document.getElementById('mobile-map-close').addEventListener('click', () => {
+  document.getElementById('mobile-map-overlay').classList.add('hidden');
+});
+
+// ── Forms ──
+document.getElementById('checklist-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const label = document.getElementById('cl-label').value.trim();
+  if (!label) return;
+  checklist.push({ id: nextId++, trip_id: trip.id, label, checked: false, sort_order: checklist.length+1 });
+  document.getElementById('cl-label').value = '';
+  renderChecklist(); renderHero();
+});
+
+document.getElementById('expense-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const cat = document.getElementById('ex-category').value;
+  const amount = Number(document.getElementById('ex-amount').value);
+  if (!Number.isFinite(amount) || amount <= 0) return;
+  expenses.push({ id: nextId++, trip_id: trip.id, category: cat, amount: Math.round(amount), day_index: null, created_at: new Date().toISOString().slice(0,10) });
+  document.getElementById('ex-amount').value = '';
+  renderBudget();
+});
+
+// ── Mobile Hero Collapse + Tab Sticky ──
+(function initScrollBehavior() {
+  if (isDesktop) return;
+  const hero = document.getElementById('hero');
+  const tabWrap = document.getElementById('tab-bar-wrapper');
+  const threshold = 160;
+
+  function onScroll() {
+    const scrollY = window.scrollY || document.documentElement.scrollTop;
+    const collapsed = scrollY > threshold;
+    hero.classList.toggle('collapsed', collapsed);
+    tabWrap.classList.toggle('stuck', collapsed);
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
+
+// ── Breakpoint ──
+window.matchMedia('(min-width: 1024px)').addEventListener('change', e => {
+  isDesktop = e.matches;
+  if (isDesktop) {
+    document.getElementById('mobile-map-overlay').classList.add('hidden');
+    document.getElementById('hero').classList.remove('collapsed');
+    document.getElementById('tab-bar-wrapper').classList.remove('stuck');
+    if (!mapDesktop) {
+      setTimeout(() => { mapDesktop = initMap('map-desktop'); updateMap(); }, 50);
+    } else {
+      setTimeout(() => mapDesktop.resize(), 50);
+    }
+  }
+});
+
+// ── Init ──
+function init() {
+  renderHero();
+  renderItinerary();
+  renderChecklist();
+  renderBudget();
+  renderGuides();
+  if (typeof lucide !== 'undefined' && lucide.createIcons) {
+    try { lucide.createIcons(); } catch(e) { console.warn('lucide init failed', e); }
+  }
+  if (isDesktop) {
+    setTimeout(() => { mapDesktop = initMap('map-desktop'); updateMap(); }, 100);
+  }
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+else init();
+</script>
+</body>
+</html>
