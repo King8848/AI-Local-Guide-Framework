@@ -60,8 +60,6 @@ private_templates/
 # 生成产物
 # =====================
 examples/output/
-examples/*.html
-examples/*.pdf
 
 # =====================
 # 临时文件

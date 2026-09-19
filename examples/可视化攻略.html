@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>豫见山西 · 跟团 7 日沉浸式攻略</title>
+<meta name="description" content="豫见山西 7 日跟团游可视化攻略：路线 + 手机 Vlog 运镜 + 山西美食" />
+<link href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.css" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0e0f13;
+    --bg2:#15161c;
+    --card:#1b1d25;
+    --card2:#20222c;
+    --line:rgba(255,255,255,.08);
+    --text:#f2efe8;
+    --dim:#a8a49a;
+    --gold:#e8a84a;
+    --gold2:#f4c878;
+    --teal:#4cc3d0;
+    --red:#e0695a;
+    --radius:18px;
+    --shadow:0 20px 60px rgba(0,0,0,.5);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;
+    line-height:1.65;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:rgba(232,168,74,.35)}
+
+  /* ============ 粒子背景 ============ */
+  #particles{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.6}
+
+  /* ============ 光斑 ============ */
+  .aurora{position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(60% 45% at 18% 8%, rgba(232,168,74,.14), transparent 60%),
+      radial-gradient(50% 40% at 85% 20%, rgba(76,195,208,.10), transparent 60%),
+      radial-gradient(55% 50% at 50% 95%, rgba(232,168,74,.08), transparent 65%);
+  }
+
+  .wrap{position:relative;z-index:2;max-width:640px;margin:0 auto;padding:0 18px}
+
+  /* ============ Hero ============ */
+  .hero{
+    position:relative;z-index:2;
+    min-height:100svh;min-height:100vh;
+    display:flex;flex-direction:column;justify-content:flex-end;
+    padding:0 18px 56px;overflow:hidden;
+  }
+  .hero-bg{
+    position:absolute;inset:0;z-index:-2;
+    background:
+      linear-gradient(180deg, rgba(14,15,19,.35) 0%, rgba(14,15,19,.55) 45%, var(--bg) 98%),
+      url('https://upload.wikimedia.org/wikipedia/commons/e/ea/Hukou_Waterfall.jpg') center/cover no-repeat;
+    background-color:#1a1a1e;
+  }
+  .hero::after{
+    content:"";position:absolute;inset:0;z-index:-1;
+    background:linear-gradient(180deg,transparent 55%,var(--bg) 100%);
+  }
+  .hero-kicker{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:12px;letter-spacing:.2em;color:var(--gold2);
+    text-transform:uppercase;margin-bottom:14px;
+    opacity:0;animation:fadeUp .8s .1s ease-out forwards;
+  }
+  .hero-kicker::before{content:"";width:28px;height:1px;background:var(--gold)}
+  .hero h1{
+    margin:0 0 10px;font-size:clamp(34px,9vw,52px);line-height:1.12;font-weight:800;
+    letter-spacing:.01em;
+    background:linear-gradient(120deg,#fff,var(--gold2));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    opacity:0;animation:fadeUp .8s .22s ease-out forwards;
+  }
+  .hero .sub{margin:0 0 22px;font-size:15px;color:var(--dim);max-width:34em;
+    opacity:0;animation:fadeUp .8s .34s ease-out forwards}
+  .hero-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px;
+    opacity:0;animation:fadeUp .8s .46s ease-out forwards}
+  .chip{
+    font-size:12px;padding:6px 12px;border-radius:999px;
+    border:1px solid var(--line);background:rgba(255,255,255,.04);
+    color:var(--dim);backdrop-filter:blur(6px);
+  }
+  .chip b{color:var(--gold2);font-weight:600}
+  .scroll-cue{margin:0;font-size:12px;color:var(--dim);letter-spacing:.15em;
+    opacity:0;animation:fadeUp .8s .6s ease-out forwards}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ============ 磁吸导航 ============ */
+  .tabbar{
+    position:sticky;top:0;z-index:50;
+    display:flex;gap:6px;overflow-x:auto;
+    padding:12px 18px;margin:0 -18px;
+    background:rgba(14,15,19,.82);backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);
+    scrollbar-width:none;
+  }
+  .tabbar::-webkit-scrollbar{display:none}
+  .tabbar a{
+    flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;
+    padding:7px 14px;border-radius:999px;font-size:13px;text-decoration:none;
+    color:var(--dim);border:1px solid var(--line);background:transparent;
+    transition:transform .2s,background .2s,color .2s,border-color .2s;
+  }
+  .tabbar a:active{transform:scale(.93)}
+  .tabbar a.active{background:linear-gradient(120deg,var(--gold),#d18a2e);color:#1a1205;border-color:transparent;font-weight:600}
+  @media(hover:hover){.tabbar a:hover{transform:translateY(-2px);color:var(--text);border-color:rgba(232,168,74,.4)}}
+
+  /* ============ 区块标题 ============ */
+  section{padding:34px 0 8px}
+  .sec-head{margin-bottom:18px}
+  .sec-head .tag{font-size:11px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase}
+  .sec-head h2{margin:6px 0 4px;font-size:24px;font-weight:800}
+  .sec-head p{margin:0;font-size:13.5px;color:var(--dim)}
+
+  /* ============ 路线流向 ============ */
+  .flow{
+    display:flex;flex-wrap:wrap;align-items:center;gap:6px;
+    padding:16px;border-radius:var(--radius);
+    background:linear-gradient(135deg,var(--card),var(--card2));
+    border:1px solid var(--line);
+  }
+  .flow-node{font-size:12.5px;color:var(--text);background:rgba(255,255,255,.05);
+    padding:5px 10px;border-radius:8px;border:1px solid var(--line);white-space:nowrap}
+  .flow-node.stay{color:var(--gold2);border-color:rgba(232,168,74,.35)}
+  .flow-arrow{color:var(--gold);font-size:12px}
+
+  /* ============ 总览表 ============ */
+  .ov-table{width:100%;border-collapse:collapse;font-size:13px;border-radius:var(--radius);overflow:hidden;
+    border:1px solid var(--line);background:var(--card)}
+  .ov-table th,.ov-table td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line)}
+  .ov-table th{background:var(--card2);color:var(--gold2);font-weight:600;font-size:12px;letter-spacing:.04em}
+  .ov-table tr:last-child td{border-bottom:none}
+  .ov-table td b{color:var(--text);font-weight:600}
+  .ov-table td.hl{color:var(--gold2);font-weight:600}
+
+  /* ============ 日行动卡（背景图 + 3D tilt） ============ */
+  .day-card{
+    position:relative;border-radius:24px;overflow:hidden;
+    border:1px solid var(--line);margin-bottom:22px;
+    background:var(--card);
+    transform-style:preserve-3d;transition:transform .35s cubic-bezier(.2,.7,.3,1),box-shadow .35s;
+    will-change:transform;
+  }
+  .day-card:hover{box-shadow:var(--shadow)}
+  .day-card .dc-img{
+    position:relative;height:190px;background-size:cover;background-position:center;
+    background-color:var(--card2);
+  }
+  .day-card .dc-img::after{content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(14,15,19,.05) 30%,rgba(20,21,28,.55) 100%)}
+  .dc-day{
+    position:absolute;top:14px;left:14px;z-index:2;
+    display:inline-flex;align-items:center;gap:7px;
+    padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700;
+    background:rgba(14,15,19,.68);backdrop-filter:blur(8px);
+    color:var(--gold2);border:1px solid rgba(232,168,74,.3);
+  }
+  .dc-emoji{position:absolute;bottom:-22px;right:16px;z-index:2;font-size:44px;
+    filter:drop-shadow(0 6px 12px rgba(0,0,0,.4))}
+  .dc-body{padding:22px 18px 20px}
+  .dc-title{font-size:19px;font-weight:800;margin:0 0 3px}
+  .dc-route{font-size:12.5px;color:var(--dim);margin:0 0 14px}
+  .dc-route b{color:var(--teal);font-weight:600}
+  .dc-block{margin:14px 0 0}
+  .dc-block h4{display:flex;align-items:center;gap:7px;margin:0 0 8px;font-size:13px;font-weight:700;color:var(--gold2);letter-spacing:.03em}
+  .dc-block h4 .dot{width:6px;height:6px;border-radius:50%;background:var(--gold)}
+  .dc-block ul{margin:0;padding:0;list-style:none}
+  .dc-block li{position:relative;padding:0 0 8px 16px;font-size:13.5px;color:var(--text)}
+  .dc-block li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:50%;background:var(--line)}
+  .dc-block li b{color:var(--gold2);font-weight:600}
+  .dc-block li .s{color:var(--dim);font-size:12.5px}
+  .spot-pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--text);
+    background:rgba(255,255,255,.05);border:1px solid var(--line);padding:3px 9px;border-radius:7px;margin:0 4px 6px 0}
+  .spot-pill .t{color:var(--dim);font-size:11px}
+
+  /* ============ 地图 ============ */
+  #map{height:380px;border-radius:24px;overflow:hidden;border:1px solid var(--line);margin-top:8px}
+  .map-note{font-size:12px;color:var(--dim);margin-top:8px}
+  .trip-marker{display:flex;align-items:center;justify-content:center;width:26px;height:26px;
+    border-radius:50%;background:linear-gradient(120deg,var(--gold),#d18a2e);color:#1a1205;
+    font-size:12px;font-weight:800;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4);cursor:pointer}
+
+  /* ============ 美食 9 维度 ============ */
+  .food-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .food-card{padding:16px;border-radius:16px;background:var(--card);border:1px solid var(--line);
+    transition:transform .25s,border-color .25s}
+  .food-card:hover{transform:translateY(-3px);border-color:rgba(232,168,74,.35)}
+  .food-card .ic{font-size:24px;display:block;margin-bottom:8px}
+  .food-card h4{margin:0 0 6px;font-size:14.5px;font-weight:700;color:var(--gold2)}
+  .food-card p{margin:0;font-size:12.5px;color:var(--dim)}
+  @media(max-width:420px){.food-grid{grid-template-columns:1fr}}
+
+  /* ============ Vlog 运镜表 ============ */
+  .move-table{width:100%;border-collapse:collapse;font-size:12.5px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--card)}
+  .move-table th,.move-table td{padding:9px 11px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  .move-table th{background:var(--card2);color:var(--gold2);font-weight:600;font-size:12px}
+  .move-table tr:last-child td{border-bottom:none}
+  .move-table td b{color:var(--gold2)}
+
+  .nar-card{padding:16px;border-radius:16px;background:var(--card);border:1px solid var(--line);margin-bottom:12px}
+  .nar-card .nd{font-size:11px;color:var(--gold);letter-spacing:.1em}
+  .nar-card h4{margin:4px 0 6px;font-size:15px}
+  .nar-card p{margin:0;font-size:13px;color:var(--dim)}
+  .nar-card p b{color:var(--text)}
+
+  /* ============ 费用/避坑/清单 ============ */
+  .cost-table{width:100%;border-collapse:collapse;font-size:13px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--card)}
+  .cost-table th,.cost-table td{padding:9px 11px;text-align:left;border-bottom:1px solid var(--line)}
+  .cost-table th{background:var(--card2);color:var(--gold2);font-weight:600;font-size:12px}
+  .cost-table tr:last-child td{border-bottom:none}
+  .cost-table td.num{color:var(--gold2);font-weight:700;white-space:nowrap}
+
+  .warn-card{display:flex;gap:11px;padding:13px 14px;border-radius:14px;background:rgba(224,105,90,.08);
+    border:1px solid rgba(224,105,90,.25);margin-bottom:9px;font-size:13px}
+  .warn-card .ic{font-size:16px;flex-shrink:0}
+  .warn-card b{color:var(--red)}
+
+  .check-item{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:12px;
+    background:var(--card);border:1px solid var(--line);margin-bottom:8px;font-size:13.5px;cursor:pointer}
+  .check-item input{width:18px;height:18px;accent-color:var(--gold);flex-shrink:0}
+
+  /* ============ 滚动 reveal ============ */
+  .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s cubic-bezier(.2,.7,.3,1),transform .7s cubic-bezier(.2,.7,.3,1)}
+  .reveal.visible{opacity:1;transform:translateY(0)}
+  .reveal.d1{transition-delay:.05s}.reveal.d2{transition-delay:.12s}.reveal.d3{transition-delay:.2s}
+
+  footer{padding:40px 0 30px;text-align:center;font-size:12px;color:var(--dim);border-top:1px solid var(--line);margin-top:30px}
+</style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+<div class="aurora"></div>
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <div class="hero-bg"></div>
+  <div class="wrap">
+    <span class="hero-kicker">一车一导 · 郑州集合散团 · 8.28–9.3</span>
+    <h1>豫见山西<br>穿越 5000 年</h1>
+    <p class="sub">8.28 周五晚火车卧铺出发，8.29 早 7 点多到郑州跟团。接下来 7 天，从 300 万年的冰洞，一路走到 1500 年前的云冈大佛脚下。</p>
+    <div class="hero-meta">
+      <span class="chip">🏮 <b>7 天</b> 山西精华</span>
+      <span class="chip">🎬 <b>手机</b> Vlog 全案</span>
+      <span class="chip">🍜 <b>9 维度</b> 山西美食</span>
+      <span class="chip">💰 自理约 <b>¥1400</b></span>
+    </div>
+    <p class="scroll-cue">向下滑动 · 沉浸式路线 ↓</p>
+  </div>
+</header>
+
+<!-- ================= 磁吸导航 ================= -->
+<nav class="tabbar" id="tabbar">
+  <a href="#overview">🗺️ 路线</a>
+  <a href="#itinerary">📅 行程</a>
+  <a href="#map">📍 地图</a>
+  <a href="#food">🍜 美食</a>
+  <a href="#vlog">🎬 Vlog</a>
+  <a href="#cost">💰 费用</a>
+</nav>
+
+<main class="wrap">
+
+  <!-- ================= 路线总览 ================= -->
+  <section id="overview">
+    <div class="sec-head reveal">
+      <div class="tag">Route</div>
+      <h2>🗺️ 路线总览</h2>
+      <p>一条文字箭头，看懂 7 天怎么串（车程长，做好「车窗延时=转场素材」的心理准备）</p>
+    </div>
+    <div class="flow reveal d1">
+      <span class="flow-node">🚄 火车卧铺</span><span class="flow-arrow">→</span>
+      <span class="flow-node stay">郑州 集合</span><span class="flow-arrow">→</span>
+      <span class="flow-node">云丘山·冰洞</span><span class="flow-arrow">→</span>
+      <span class="flow-node">壶口·平遥</span><span class="flow-arrow">→</span>
+      <span class="flow-node">雁门关·云冈</span><span class="flow-arrow">→</span>
+      <span class="flow-node">悬空寺·五台</span><span class="flow-arrow">→</span>
+      <span class="flow-node">晋祠·乔家</span><span class="flow-arrow">→</span>
+      <span class="flow-node stay">皇城相府</span><span class="flow-arrow">→</span>
+      <span class="flow-node stay">郑州 散团</span>
+    </div>
+
+    <table class="ov-table reveal d2" style="margin-top:16px">
+      <tr><th>天</th><th>日期</th><th>路线</th><th>车程</th><th>宿</th><th>今日高光</th></tr>
+      <tr><td><b>D1</b></td><td>8.28 五</td><td>各地→郑州</td><td>—</td><td>火车</td><td class="hl">出发仪式感</td></tr>
+      <tr><td><b>D2</b></td><td>8.29 六</td><td>云丘山→临汾</td><td>450km</td><td>临汾</td><td class="hl">万年冰洞</td></tr>
+      <tr><td><b>D3</b></td><td>8.30 日</td><td>壶口→王家→平遥</td><td>300km</td><td>平遥</td><td class="hl">壶口+夜游</td></tr>
+      <tr><td><b>D4</b></td><td>8.31 一</td><td>雁门关→云冈→大同</td><td>450km</td><td>大同</td><td class="hl">云冈大佛</td></tr>
+      <tr><td><b>D5</b></td><td>9.1 二</td><td>悬空寺→五台→忻州</td><td>380km</td><td>忻州</td><td class="hl">悬空寺+五台</td></tr>
+      <tr><td><b>D6</b></td><td>9.2 三</td><td>晋祠→乔家→平遥</td><td>180km</td><td>平遥</td><td class="hl">晋祠+乔家</td></tr>
+      <tr><td><b>D7</b></td><td>9.3 四</td><td>皇城相府→郑州</td><td>350km</td><td>—</td><td class="hl">皇城收官</td></tr>
+    </table>
+  </section>
+
+  <!-- ================= 逐日行动卡 ================= -->
+  <section id="itinerary">
+    <div class="sec-head reveal">
+      <div class="tag">Itinerary</div>
+      <h2>📅 逐日行动卡</h2>
+      <p>每张卡 = 景点 + 时间 + 手机运镜 + 加餐，照着走就行</p>
+    </div>
+    <div id="days"></div>
+  </section>
+
+  <!-- ================= 地图 ================= -->
+  <section id="map-sec">
+    <div class="sec-head reveal">
+      <div class="tag">Map</div>
+      <h2>📍 路线地图</h2>
+      <p>7 天景点连成一条线（WGS-84 坐标，导航自动转高德/百度）</p>
+    </div>
+    <div id="map" class="reveal d1"></div>
+    <p class="map-note">地图底图：OpenFreeMap（MapLibre GL 矢量，国内可用）。坐标仅供参考，出发前用高德确认。</p>
+  </section>
+
+  <!-- ================= 美食 9 维度 ================= -->
+  <section id="food">
+    <div class="sec-head reveal">
+      <div class="tag">Food</div>
+      <h2>🍜 山西美食 9 维度</h2>
+      <p>山西菜咸香为主、无面不成席。跟团餐之外，这些是加分项</p>
+    </div>
+    <div class="food-grid">
+      <div class="food-card reveal"><span class="ic">☕</span><h4>早餐全景</h4><p>头脑（太原，配烧麦）、羊杂割、老豆腐、小米粥+油条、平遥碗托</p></div>
+      <div class="food-card reveal d1"><span class="ic">🫓</span><h4>面食宇宙</h4><p>刀削面（大同最正宗）、剔尖、猫耳朵、栲栳栳、牛肉丸子面（临汾）、饸饹面</p></div>
+      <div class="food-card reveal d1"><span class="ic">🥘</span><h4>硬菜大菜</h4><p>过油肉（第一名菜）、平遥牛肉、糖醋丸子、什锦铜锅（大同）、黄河鲤鱼、台蘑炖鸡、定襄蒸肉</p></div>
+      <div class="food-card reveal d2"><span class="ic">🍡</span><h4>街头夜市</h4><p>太原柳巷食品街、平遥明清街、大同鼓楼夜市、忻州古城夜市</p></div>
+      <div class="food-card reveal d2"><span class="ic">🍶</span><h4>酒水茶饮</h4><p>汾酒/竹叶青（杏花村）、山西老陈醋（宁化府/东湖，中和水碱）</p></div>
+      <div class="food-card reveal d2"><span class="ic">🍰</span><h4>甜点糕点</h4><p>太谷饼（山西第一饼）、闻喜煮饼、黄米油糕、石头饼、晋南麻花</p></div>
+      <div class="food-card reveal d3"><span class="ic">📅</span><h4>时令美食（9月）</h4><p>山西大红枣（行程赠送）、葡萄、核桃、苹果</p></div>
+      <div class="food-card reveal d3"><span class="ic">🎁</span><h4>伴手礼</h4><p>老陈醋、平遥牛肉（冠云/宝聚源）、太谷饼、汾酒、枣夹核桃</p></div>
+      <div class="food-card reveal d3"><span class="ic">📝</span><h4>美食文化</h4><p>吃饭前先倒一碟醋是当地仪式感；晋商走西口带火的牛肉成了平遥招牌</p></div>
+    </div>
+  </section>
+
+  <!-- ================= Vlog 全案 ================= -->
+  <section id="vlog">
+    <div class="sec-head reveal">
+      <div class="tag">Vlog</div>
+      <h2>🎬 手机 Vlog 全案</h2>
+      <p>全程手机拍：开 4K/60fps + HDR + 九宫格，充电宝边充边拍</p>
+    </div>
+
+    <div class="reveal">
+      <table class="move-table">
+        <tr><th>运镜</th><th>怎么拍</th><th>用在山西哪</th></tr>
+        <tr><td><b>缓慢平移</b></td><td>手臂伸直、腰转，从左扫到右</td><td>壶口全景、云冈石窟、城墙</td></tr>
+        <tr><td><b>仰拍上摇</b></td><td>镜头贴地从下往上摇</td><td>琉璃塔、云冈大佛、悬空寺</td></tr>
+        <tr><td><b>推进穿越</b></td><td>匀速往前走，保持水平</td><td>平遥明清街、乔家门洞、皇城巷道</td></tr>
+        <tr><td><b>跟拍</b></td><td>跟着人物走</td><td>塔尔坡古村体验、逛街</td></tr>
+        <tr><td><b>环绕</b></td><td>绕建筑走半圈</td><td>大白塔、古城楼</td></tr>
+        <tr><td><b>延时摄影</b></td><td>固定机位，间隔 2-5s 拍 5 分钟</td><td>车窗流动、云层、人流</td></tr>
+        <tr><td><b>慢动作</b></td><td>1080P/120fps</td><td>壶口水雾、冰洞滴水、经幡</td></tr>
+      </table>
+    </div>
+
+    <div class="sec-head reveal" style="margin-top:22px"><div class="tag">Storyline</div><h2>🎞️ 7 天叙事线</h2></div>
+    <div id="nar"></div>
+
+    <div class="nar-card reveal" style="border-color:rgba(232,168,74,.3);background:linear-gradient(135deg,rgba(232,168,74,.1),rgba(232,168,74,.02))">
+      <div class="nd">每日必拍 3 镜头</div>
+      <h4>保证素材够剪</h4>
+      <p>① <b>一个地标空镜</b>　② <b>一个你在景里的镜头</b>（自拍/请人拍）　③ <b>一段车窗转场</b>。凑齐三样，晚上回酒店 10 分钟剪一条 15 秒朋友圈。</p>
+    </div>
+
+    <div class="nar-card reveal">
+      <div class="nd">剪辑节奏</div>
+      <h4>沉浸式剪辑</h4>
+      <p>地标空镜 3-5s 慢放 · 行走/车窗 5-10s 正常或 1.5 倍 · 美食特写 3-5s 慢放提饱和 · 延时 10-15s · 出镜口播 5-10s。调色走<b>复古胶片</b>（降饱和、加颗粒、偏暖），最贴黄土+古建气质。</p>
+    </div>
+  </section>
+
+  <!-- ================= 费用/避坑/清单 ================= -->
+  <section id="cost">
+    <div class="sec-head reveal">
+      <div class="tag">Cost</div>
+      <h2>💰 费用 + 避坑</h2>
+      <p>团费之外这些要当场付，提前备好现金</p>
+    </div>
+
+    <table class="cost-table reveal">
+      <tr><th>项目</th><th>金额</th><th>说明</th></tr>
+      <tr><td>🎫 门票（60 岁以下）</td><td class="num">¥1080</td><td>60-64 岁 235 / 65+ 100 / 学生 596</td></tr>
+      <tr><td>🚌 景区交通车</td><td class="num">¥190</td><td>现付导游，含平遥电瓶车 40 等</td></tr>
+      <tr><td>🎧 耳麦讲解器</td><td class="num">¥130</td><td>现付导游，基本强制</td></tr>
+      <tr><td>🍜 正餐</td><td class="num">已含</td><td>5 早 4 正，30 元/人标准</td></tr>
+      <tr><td>🏨 郑州接送</td><td class="num">¥30</td><td>动车接站，建议地铁更省</td></tr>
+      <tr><td>🧗 悬空寺登临</td><td class="num">¥100</td><td>不建议，排队 1-2 小时起</td></tr>
+    </table>
+    <p class="map-note reveal">60 岁以下自理合计 ≈ ¥1400，再加自选加餐和伴手礼。</p>
+
+    <div class="sec-head reveal" style="margin-top:22px"><div class="tag">Avoid</div><h2>⚠️ 避坑清单</h2></div>
+    <div class="reveal">
+      <div class="warn-card"><span class="ic">🛍️</span><span><b>三个购物点</b>（土特产中心 / 宝源醋坊 / 冠云牛肉博览园）：只逛不买或按需少量买，老陈醋、牛肉认品牌（宁化府/东湖/冠云）。</span></div>
+      <div class="warn-card"><span class="ic">🧗</span><span><b>悬空寺登临 ¥100</b>：不建议，排队久、放票不可预估。</span></div>
+      <div class="warn-card"><span class="ic">📿</span><span><b>寺庙香火/开光</b>：五台山香火钱、开光费是消费陷阱，心诚则灵，别被带节奏。</span></div>
+      <div class="warn-card"><span class="ic">🚌</span><span><b>长车程</b>：每天 3.5–7.5h，颈枕 + 晕车药 + 充电宝三件套随身。</span></div>
+      <div class="warn-card"><span class="ic">🚫</span><span><b>石窟/古建</b>：禁止闪光灯、禁止触摸文物，贴了禁拍标志的窟不拍。</span></div>
+    </div>
+
+    <div class="sec-head reveal" style="margin-top:22px"><div class="tag">Checklist</div><h2>🎒 行前清单</h2></div>
+    <div id="checklist" class="reveal"></div>
+  </section>
+
+</main>
+
+<footer>
+  豫见山西 · 跟团 7 日沉浸式攻略<br>
+  基于「豫见山西 2」行程单整理 · 各店地址建议出发前用高德确认
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+<script>
+/* ================= 数据 ================= */
+const DAYS = [
+  {
+    d:"D1", date:"8.28 周五", emoji:"🚄", img:null,
+    title:"出发 · 火车卧铺", route:"南昌 / 义乌 → 郑州（约 12h，宿火车）",
+    spots:["🚄 火车卧铺出发","🌙 上铺 + 车窗夜景"],
+    vlog:["拍车票 + 站台 + 上铺视角","车窗夜景延时（片头素材）","今天就把 vlog 片头拍出来，别等到景区才开机"],
+    food:["自带零食（火车站别买高价货）","明早到郑州，早餐可选羊肉汤 / 胡辣汤暖胃"],
+    note:"上铺好睡但行李放稳，贵重物品随身。"
+  },
+  {
+    d:"D2", date:"8.29 周六", emoji:"🧊", img:"https://p8.itc.cn/images01/20220731/9bbff919111d4de6afd613910433cb5a.jpeg",
+    title:"云丘山 · 万年冰洞", route:"早 7 点多到郑州集合 → 云丘山(350km/4h) → 临汾(100km/2h)",
+    spots:["🏔️ 云丘山（喀斯特峰林）","🧊 冰洞群（世界三大冰洞奇观，365 天有冰）","🏘️ 塔尔坡古村（窑洞石砌，皮影戏 / 磨豆腐体验）"],
+    vlog:["冰洞：切夜景模式或提曝光，仰拍冰柱 + 慢动作拍冰棱滴水","塔尔坡窑洞用穿越运镜，皮影戏固定机位拍剪影","全天最佳 = 冰洞，光线暗要注意补光"],
+    food:["临汾晚上自由活动：牛肉丸子面 / 饸饹面（辣油香，别点太辣）"],
+    note:"冰洞内常年零下，租棉衣或穿厚点；冰面湿滑小心走。"
+  },
+  {
+    d:"D3", date:"8.30 周日", emoji:"🌊", img:"https://p3.itc.cn/q_70/images03/20231003/e066932162a74104809887d06572c85d.jpeg",
+    title:"壶口瀑布 · 平遥夜游", route:"临汾 → 壶口(100km/2h) → 王家大院(150km/2.5h) → 平遥(50km/1h)",
+    spots:["🌊 壶口瀑布（黄河一壶收）","🛕 广胜寺飞虹琉璃塔","🏛️ 王家大院（民间故宫）","🌃 夜游平遥古城"],
+    vlog:["壶口：手机套防水袋，远离水雾，全景平移拍「一壶收」+ 慢动作拍水雾（全片高潮）","飞虹琉璃塔逆光仰拍（琉璃五彩）","王家大院门楼仰拍推进 + 对称构图","晚上平遥开夜景模式拍灯笼 + 明清街穿越"],
+    food:["平遥：平遥牛肉、碗托（凉拌荞麦）、栲栳栳、长山药","牛肉认准冠云 / 宝聚源，别买无标散称"],
+    note:"壶口汛期可能改陕西侧，听导游安排；水雾大，别一直对着瀑布。"
+  },
+  {
+    d:"D4", date:"8.31 周一", emoji:"🗿", img:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/61292-Yungang-Grottoes_%2828498548881%29.jpg/1200px-61292-Yungang-Grottoes_%2828498548881%29.jpg",
+    title:"雁门关 · 云冈石窟", route:"平遥 → 雁门关(280km/3.5h) → 云冈(150km/2.5h) → 大同(20km)",
+    spots:["🏯 雁门关（九塞尊崇第一关）","🗿 云冈石窟（世界文化遗产，59000 余尊造像）"],
+    vlog:["雁门关关城仰拍 + 长城山脊全景","云冈重头戏：露天大佛逆光仰拍最出片，昙曜五窟走一圈环绕/平移","注意：窟内贴「禁止拍照」的窟一定遵守"],
+    food:["大同晚上：刀削面（山西第一刀削面，东方削面性价比高）","想吃百花烧麦 + 什锦铜锅去凤临阁（价位高）","浑源凉粉来一碗"],
+    note:"石窟禁止闪光灯；大同昼夜温差大，晚上加件外套。"
+  },
+  {
+    d:"D5", date:"9.1 周二", emoji:"🏔️", img:"https://q2.itc.cn/q_70/images01/20240928/0a478d1756f144d99330599b6fcbdcd9.jpeg",
+    title:"悬空寺 · 五台山", route:"大同 → 悬空寺(90km/1.5h) → 五台山(160km/3h) → 忻州(130km/3h)",
+    spots:["🏯 悬空寺（1400 年三教合一，贴崖而建）","⛰️ 五台山（显通寺、大白塔、殊像寺、罗睺寺）"],
+    vlog:["悬空寺：先拍远景（整座寺悬在崖壁最震撼），再仰拍细节","五台山：红墙金顶 + 大白塔环绕 + 转经筒慢动作 + 朝圣人群纪实，出片率高"],
+    food:["五台山台蘑炖鸡 / 台蘑素斋（特色）","忻州定襄蒸肉"],
+    note:"悬空寺登临 ¥100 不建议；五台山海拔高带厚外套（凉 8-10℃）；下雪封路绕行油费另付听安排。"
+  },
+  {
+    d:"D6", date:"9.2 周三", emoji:"🏮", img:"https://upload.wikimedia.org/wikipedia/commons/e/e2/%E4%B9%94%E5%AE%B6%E5%A4%A7%E9%99%A2.jpg",
+    title:"晋祠 · 乔家大院", route:"忻州 → 晋祠(100km/1.5h) → 太原古县城 → 乔家大院(40km/1h) → 平遥(40km/1h)",
+    spots:["🏛️ 晋祠（最早古典宗祠园林）","🏘️ 太原古县城（凤凰城）","🛍️ 土特产中心 + 宝源醋坊（购物点，理性）","🏮 乔家大院（双喜字形，北方民居明珠）"],
+    vlog:["晋祠千年古柏 + 难老泉 + 圣母殿，逆光拍树影","乔家大院双喜院落，门洞穿越 + 砖雕木雕特写 + 高墙下人物剪影"],
+    food:["太原方向：头脑配烧麦（清和元招牌）、郝刚刚羊杂割、过油肉（山西第一名菜）"],
+    note:"土特产中心和醋坊是购物点，只逛不买或按需买；老陈醋认宁化府 / 东湖品牌。"
+  },
+  {
+    d:"D7", date:"9.3 周四", emoji:"🏰", img:"https://yczf.gov.cn/yryc/yxyc/201409/W020200901646929166011.JPG",
+    title:"皇城相府 · 返程", route:"平遥 → 冠云牛肉博览园（购物点）→ 皇城相府(350km) → 郑州散团",
+    spots:["🏰 皇城相府（康熙老师陈廷敬故居，明清城堡式官宅）"],
+    vlog:["皇城相府城门仰拍 + 御书楼 + 河山楼 + 藏兵洞层叠，城墙环绕一镜到底","结尾返程车上拍回望口播：「7 天，从冰洞走到大佛，山西下次见」"],
+    food:["冠云牛肉当伴手礼可以，别囤太多","晋城/阳城特色，返程前把伴手礼买齐（牛肉、太谷饼、醋）"],
+    note:"返程车次：火车订 18:00 后、高铁 18:30 后、航班 19:30 后，给堵车留余量。"
+  }
+];
+
+const NAR = [
+  {d:"D1", t:"出发期待", p:"车票+站台+上铺 → <b>火车驶离站台</b> → 车窗夜景延时"},
+  {d:"D2", t:"奇观开场", p:"云丘山山门推进 → <b>冰洞仰拍冰柱（慢动作滴水）</b> → 车窗黄土高原延时"},
+  {d:"D3", t:"全片最高潮", p:"壶口轰鸣前静默 → <b>黄河一壶收 + 水雾慢动作</b> → 平遥城墙亮灯瞬间"},
+  {d:"D4", t:"震撼敬畏", p:"雁门关关城仰拍 → <b>云冈露天大佛仰拍（逆光）</b> → 大同古城夜景"},
+  {d:"D5", t:"仙气宁静", p:"悬空寺远景 → <b>悬空寺贴崖仰拍 + 五台转经筒环绕</b> → 五台山路车窗"},
+  {d:"D6", t:"人文烟火", p:"晋祠千年古柏 → <b>乔家砖雕特写 + 双喜院落</b> → 平遥夜灯（二次）"},
+  {d:"D7", t:"收官圆满", p:"皇城相府城门 → <b>御书楼/河山楼仰拍</b> → 返程车窗回望 + 结尾口播"}
+];
+
+const CHECKLIST = ["身份证 + 优惠证（学生/军官等）","手机 + 充电宝 2 万毫安 + 64G 空间 + 自拍杆/小三脚架","夏装 + 薄外套/冲锋衣 + 长裤（五台山冷）","防晒霜 + 帽子 + 太阳镜","润唇膏 + 护手霜 + 水杯（山西极干）","运动鞋/软底鞋（宽松）","肠胃药 + 感冒药 + 晕车药","雨衣/雨伞 + 少量现金","颈枕 + 耳机（长车程）"];
+
+const POIS = [
+  {n:"郑州(集合)", lat:34.7466, lng:113.6253, d:1},
+  {n:"云丘山", lat:35.69, lng:110.85, d:2},
+  {n:"壶口瀑布", lat:36.147, lng:110.447, d:3},
+  {n:"王家大院", lat:36.87, lng:111.87, d:3},
+  {n:"平遥古城", lat:37.202, lng:112.177, d:3},
+  {n:"雁门关", lat:39.19, lng:112.86, d:4},
+  {n:"云冈石窟", lat:40.111, lng:113.132, d:4},
+  {n:"悬空寺", lat:39.662, lng:113.712, d:5},
+  {n:"五台山", lat:39.007, lng:113.596, d:5},
+  {n:"晋祠", lat:37.713, lng:112.434, d:6},
+  {n:"乔家大院", lat:37.430, lng:112.40, d:6},
+  {n:"皇城相府", lat:35.52, lng:112.42, d:7}
+];
+
+/* ================= 渲染日卡 ================= */
+function renderDays(){
+  const el = document.getElementById('days');
+  el.innerHTML = DAYS.map((x,i)=>{
+    const imgStyle = x.img ? `background-image:linear-gradient(180deg,rgba(14,15,19,.1) 30%,rgba(20,21,28,.6)),url('${x.img}')` : `background:linear-gradient(135deg,#23242e,#1b1d25)`;
+    const spots = x.spots.map(s=>{
+      const idx = s.indexOf(' ');
+      const e = s.slice(0,idx); const t = s.slice(idx+1);
+      return `<span class="spot-pill">${e}<span class="t">${t}</span></span>`;
+    }).join('');
+    const vlog = x.vlog.map(v=>`<li>${v}</li>`).join('');
+    const food = x.food.map(f=>`<li>${f}</li>`).join('');
+    return `
+      <div class="day-card reveal d${i%3}" data-lat="" style="margin-bottom:22px">
+        <div class="dc-img" style="${imgStyle}"></div>
+        <span class="dc-day">${x.d} · ${x.date}</span>
+        <span class="dc-emoji">${x.emoji}</span>
+        <div class="dc-body">
+          <h3 class="dc-title">${x.title}</h3>
+          <p class="dc-route">🚌 <b>${x.route}</b></p>
+          <div style="margin:10px 0 0">${spots}</div>
+          <div class="dc-block"><h4><span class="dot"></span>📱 手机运镜</h4><ul>${vlog}</ul></div>
+          <div class="dc-block"><h4><span class="dot"></span>🍜 今日加餐</h4><ul>${food}</ul></div>
+          <div class="dc-block"><h4><span class="dot"></span>⚠️ 注意</h4><ul><li>${x.note}</li></ul></div>
+        </div>
+      </div>`;
+  }).join('');
+
+  // 3D tilt（仅桌面 hover）
+  if(window.matchMedia('(hover:hover)').matches){
+    document.querySelectorAll('.day-card').forEach(card=>{
+      card.addEventListener('mousemove',e=>{
+        const r=card.getBoundingClientRect();
+        const x=(e.clientX-r.left)/r.width-0.5;
+        const y=(e.clientY-r.top)/r.height-0.5;
+        card.style.transform=`perspective(1100px) rotateY(${x*7}deg) rotateX(${-y*7}deg) translateY(-3px)`;
+      });
+      card.addEventListener('mouseleave',()=>{card.style.transform='';});
+    });
+  }
+}
+
+function renderNar(){
+  document.getElementById('nar').innerHTML = NAR.map(n=>`
+    <div class="nar-card reveal">
+      <div class="nd">${n.d} · ${n.t}</div>
+      <h4>${n.t}</h4>
+      <p>${n.p}</p>
+    </div>`).join('');
+}
+
+function renderChecklist(){
+  document.getElementById('checklist').innerHTML = CHECKLIST.map((c,i)=>`
+    <label class="check-item"><input type="checkbox"> ${c}</label>`).join('');
+}
+
+/* ================= 滚动 reveal ================= */
+function initReveal(){
+  const io = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target);} });
+  },{threshold:0.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+}
+
+/* ================= 粒子背景 ================= */
+function initParticles(){
+  const c=document.getElementById('particles'), ctx=c.getContext('2d');
+  let W,H,ps=[];
+  function resize(){W=c.width=innerWidth;H=c.height=innerHeight;}
+  resize();addEventListener('resize',resize);
+  const N=Math.min(60,Math.floor(innerWidth/16));
+  for(let i=0;i<N;i++){ps.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.8+0.4,s:Math.random()*0.35+0.08,a:Math.random()*0.5+0.15,c:Math.random()<0.75?`232,168,74`:`76,195,208`});}
+  (function tick(){
+    ctx.clearRect(0,0,W,H);
+    ps.forEach(p=>{
+      p.y-=p.s; if(p.y<-5){p.y=H+5;p.x=Math.random()*W;}
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${p.c},${p.a})`;ctx.fill();
+    });
+    requestAnimationFrame(tick);
+  })();
+}
+
+/* ================= 磁吸导航高亮 ================= */
+function initTabbar(){
+  const links=[...document.querySelectorAll('.tabbar a')];
+  const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+  const io=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ links.forEach(l=>l.classList.toggle('active',l.getAttribute('href')==='#'+e.target.id)); } });
+  },{rootMargin:'-45% 0px -50% 0px'});
+  secs.forEach(s=>s&&io.observe(s));
+}
+
+/* ================= 地图 ================= */
+function initMap(){
+  if(typeof maplibregl==='undefined'){return;}
+  const map=new maplibregl.Map({
+    container:'map',
+    style:'https://tiles.openfreemap.org/styles/liberty',
+    center:[112.0,37.2],
+    zoom:5.1,
+    attributionControl:false
+  });
+  map.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-right');
+
+  const lineCoords = POIS.map(p=>[p.lng,p.lat]);
+  map.on('load',()=>{
+    map.addSource('route',{type:'geojson',data:{type:'Feature',geometry:{type:'LineString',coordinates:lineCoords},properties:{}}});
+    map.addLayer({id:'route',type:'line',source:'route',layout:{'line-join':'round','line-cap':'round'},paint:{'line-color':'#e8a84a','line-width':2.5,'line-opacity':0.85,'line-dasharray':[1,0]}});
+
+    POIS.forEach((p,i)=>{
+      const el=document.createElement('div');
+      el.className='trip-marker';el.textContent=p.d;
+      new maplibregl.Marker({element:el}).setLngLat([p.lng,p.lat]).setPopup(new maplibregl.Popup({offset:14}).setText(`D${p.d} · ${p.n}`)).addTo(map);
+    });
+  });
+  const b=new maplibregl.LngLatBounds();
+  POIS.forEach(p=>b.extend([p.lng,p.lat]));
+  map.fitBounds(b,{padding:{top:60,bottom:60,left:40,right:40},duration:0});
+}
+
+/* ================= 启动 ================= */
+renderDays();renderNar();renderChecklist();
+initReveal();initParticles();initTabbar();initMap();
+</script>
+</body>
+</html>
